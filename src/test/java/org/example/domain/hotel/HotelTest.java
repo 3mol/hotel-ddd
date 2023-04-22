@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.example.domain.order.Order;
+import org.example.domain.order.OrderStatus;
 import org.example.domain.order.Pay;
 import org.example.domain.order.PayFactory;
+import org.example.domain.order.PayMethod;
 import org.example.domain.order.PayStatus;
 import org.example.domain.order.PayType;
 import org.example.domain.user.Customer;
@@ -97,6 +99,33 @@ public class HotelTest {
         room.getPrice() * PayFactory.FINAL_PAYMENT_PROPORTION,
         getPay(payList, PayType.FINAL_PAYMENT));
     Assertions.assertEquals(PayFactory.DEPOSIT_CHARGE, getPay(payList, PayType.DEPOSIT_CHARGE));
+    Assertions.assertEquals(RoomStatus.FREE, order.getRoom().getStatus());
+    Assertions.assertEquals(OrderStatus.PENDING, order.getStatus());
+    System.out.println(order);
+  }
+
+  @Test
+  @DisplayName("预定房间, 使用微信支付支付订金, 支付成功")
+  void hotelReserveRoom2() {
+    // Given
+    final Hotel hotel = new Hotel("1", "酒店", "地址", "电话", HotelStatus.OPEN, "");
+    final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
+    hotel.appendRoom(room);
+    final Customer customer = new Customer("小明", "身份证", "小明电话");
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer);
+    // When
+    // theHotelAcceptsAmounts
+    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
+    // Then
+    final Stream<Pay> payStream =
+        order.getPays().stream().filter(i -> i.getStatus() == PayStatus.PAID);
+    final List<Pay> payList = payStream.collect(Collectors.toList());
+    Assertions.assertEquals(1, payList.size());
+    Assertions.assertEquals(PayMethod.WECHAT, payList.get(0).getMethod());
+    Assertions.assertEquals(PayType.DEPOSIT, payList.get(0).getType());
+    Assertions.assertNotNull(payList.get(0).getThirdPartySerialNumber());
+    Assertions.assertEquals(RoomStatus.RESERVED, order.getRoom().getStatus());
+    Assertions.assertEquals(OrderStatus.RESERVED, order.getStatus());
   }
 
   private static Double getPay(List<Pay> payList, PayType payType) {

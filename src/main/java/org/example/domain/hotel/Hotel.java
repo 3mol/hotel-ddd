@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.example.application.PayService;
 import org.example.domain.order.Order;
 import org.example.domain.order.OrderFactory;
+import org.example.domain.order.OrderStatus;
 import org.example.domain.order.Pay;
+import org.example.domain.order.PayMethod;
+import org.example.domain.order.PayType;
 import org.example.domain.user.Customer;
 
 @Data
@@ -85,4 +89,9 @@ public class Hotel {
   // private List<入住信息> checkIns;
   // private List<退房信息> checkOuts;
 
+  public void acceptPay(Order order, PayType payType, PayMethod payMethod, double amount) {
+    PayService.pay(order, payType, payMethod, amount);
+    order.setStatus(OrderStatus.RESERVED);
+    order.getRoom().setStatus(RoomStatus.RESERVED);
+  }
 }

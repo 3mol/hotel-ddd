@@ -18,7 +18,7 @@ public class OrderFactory {
     settingReserveInfo(customer, order);
     settingPayInfo(targetRoom, order);
     order.setRoom(targetRoom);
-    order.setStatus(OrderStatus.UNCHECKED);
+    order.setStatus(OrderStatus.PENDING);
     return order;
   }
 
