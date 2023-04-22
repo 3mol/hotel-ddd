@@ -1,6 +1,7 @@
 package org.example.domain.hotel;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -91,7 +92,23 @@ public class Hotel {
 
   public void acceptPay(Order order, PayType payType, PayMethod payMethod, double amount) {
     PayService.pay(order, payType, payMethod, amount);
-    order.setStatus(OrderStatus.RESERVED);
-    order.getRoom().setStatus(RoomStatus.RESERVED);
+    if (payType == PayType.DEPOSIT) {
+      order.setStatus(OrderStatus.RESERVED);
+      order.getRoom().setStatus(RoomStatus.RESERVED);
+    }
+    if (payType == PayType.FINAL_PAYMENT) {
+      // ignore
+    }
+    if (payType == PayType.DEPOSIT_CHARGE) {
+      // ignore
+    }
+  }
+
+  public void checkIn(Order order, Customer customer) {
+    order.setStatus(OrderStatus.CHECKED);
+    order.getRoom().setStatus(RoomStatus.CHECKED_IN);
+    order.getCustomers().add(customer);
+    order.setCheckInTime(new Date());
+    new CheckedInEventHandler(this).handle(new CheckedInEvent(order.getNumber()));
   }
 }

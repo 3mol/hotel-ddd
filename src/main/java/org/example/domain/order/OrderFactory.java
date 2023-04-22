@@ -1,5 +1,6 @@
 package org.example.domain.order;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
@@ -19,6 +20,7 @@ public class OrderFactory {
     settingPayInfo(targetRoom, order);
     order.setRoom(targetRoom);
     order.setStatus(OrderStatus.PENDING);
+    order.setCustomers(new ArrayList<>());
     return order;
   }
 

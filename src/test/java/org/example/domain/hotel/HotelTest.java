@@ -128,6 +128,32 @@ public class HotelTest {
     Assertions.assertEquals(OrderStatus.RESERVED, order.getStatus());
   }
 
+  @Test
+  @DisplayName("预定房间成功后, 入住酒店")
+  void checkIn() {
+    // Given
+    final Hotel hotel = new Hotel("1", "酒店", "地址", "电话", HotelStatus.OPEN, "");
+    final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
+    hotel.appendRoom(room);
+    final Customer customer = new Customer("小明", "身份证", "小明电话");
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer);
+    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
+    // When
+    // theHotelAcceptsAmounts
+    hotel.acceptPay(order, PayType.FINAL_PAYMENT, PayMethod.WECHAT, 200 * 0.8);
+    hotel.acceptPay(order, PayType.DEPOSIT_CHARGE, PayMethod.WECHAT, 30);
+    hotel.checkIn(order, customer);
+    // Then
+    final Stream<Pay> payStream =
+        order.getPays().stream().filter(i -> i.getStatus() == PayStatus.PAID);
+    final List<Pay> payList = payStream.collect(Collectors.toList());
+    Assertions.assertEquals(3, payList.size());
+    Assertions.assertEquals(RoomStatus.CHECKED_IN, order.getRoom().getStatus());
+    Assertions.assertEquals(OrderStatus.CHECKED, order.getStatus());
+    Assertions.assertEquals(1, order.getCustomers().size());
+    Assertions.assertEquals(customer, order.getCustomers().get(0));
+  }
+
   private static Double getPay(List<Pay> payList, PayType payType) {
     return payList.stream()
         .filter(i -> i.getType() == payType)
