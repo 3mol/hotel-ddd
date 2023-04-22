@@ -1,11 +1,13 @@
 package org.example.domain.hotel;
 
-import cn.hutool.db.sql.Order;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.example.domain.order.Order;
+import org.example.domain.order.OrderFactory;
 import org.example.domain.order.Pay;
+import org.example.domain.user.Customer;
 
 @Data
 @AllArgsConstructor
@@ -20,6 +22,7 @@ public class Hotel {
   private List<Employee> employees;
   private List<Order> reserves;
   private List<Pay> pays;
+  private List<Order> orders;
 
   public Hotel(
       String id,
@@ -35,6 +38,7 @@ public class Hotel {
         phone,
         status,
         description,
+        new ArrayList<>(),
         new ArrayList<>(),
         new ArrayList<>(),
         new ArrayList<>(),
@@ -63,6 +67,21 @@ public class Hotel {
     }
     this.rooms.add(room);
   }
+
+  public Order reserveRoom(RoomDoor roomDoor, Customer customer) {
+    final Room targetRoom =
+        this.rooms.stream().filter(i -> i.getRoomDoor().equals(roomDoor)).findFirst().orElseThrow();
+    if (targetRoom.getStatus() != RoomStatus.FREE) {
+      throw new RuntimeException("房间不可用");
+    }
+    final Order order = OrderFactory.buildByReserveRoom(targetRoom, customer);
+    this.orders.add(order);
+    // 发送预定消息事件
+    new ReserveRoomEventHandler(this)
+        .handle(new ReserveRoomEvent(order.getNumber(), ReserveRoomEvent.Status.ORDERED));
+    return order;
+  }
+
   // private List<入住信息> checkIns;
   // private List<退房信息> checkOuts;
 
