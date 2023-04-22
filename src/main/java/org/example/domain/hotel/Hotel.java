@@ -54,6 +54,15 @@ public class Hotel {
         .orElseThrow()
         .setStatus(EmployeeStatus.OFF_JOB);
   }
+
+  public void appendRoom(Room room) {
+    final boolean anyMatch =
+        this.rooms.stream().anyMatch(i -> i.getNumber().equals(room.getNumber()));
+    if (anyMatch) {
+      throw new RuntimeException("房间号重复");
+    }
+    this.rooms.add(room);
+  }
   // private List<入住信息> checkIns;
   // private List<退房信息> checkOuts;
 
