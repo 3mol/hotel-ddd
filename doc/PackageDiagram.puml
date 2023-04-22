@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/zh/class-diagram
+page 1x2
+title 旅店管理系统
+
+namespace domain.旅店 {
+    class 旅店 {}
+    class 雇员 {}
+    旅店 o-- 雇员
+}
+
+
+namespace domain.履约单 {
+
+    class 履约单 <<root>> {}
+    履约单 *-- 预定
+    履约单 o-- 房间
+    履约单 o-- 旅客
+    履约单 *-- 支付
+    房间 -- 折扣
+
+    class 房间 {}
+
+    class 折扣 <<value>> {}
+
+    class 预定 {}
+
+    class 支付 {}
+    class 旅客 <<value>> {}
+}
+
+namespace domain.房门 {
+    class 房门 {}
+    class 房门锁 {}
+    房门 -- 房卡
+    房门 *-- 房门锁
+}
+
+namespace domain.用户 {
+    class 用户 {}
+
+    class 会员卡 {}
+
+    用户 -- 会员卡
+}
+
+namespace domain.报表 {
+    abstract 报表 {}
+
+    class 预定报表 extends 报表 {}
+
+    class 入住报表 extends 报表 {}
+}
+
+@enduml
