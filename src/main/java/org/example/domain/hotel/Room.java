@@ -36,4 +36,13 @@ public class Room {
     this.roomDoor = roomDoor;
     this.discount = discount;
   }
+
+  public void open(RoomCard roomCard) {
+    if (roomCard == null) {
+      throw new RuntimeException("房卡不能为空");
+    }
+    if (roomCard.getKey().equals(this.getRoomDoor().getRoomLock().getKey())) {
+      this.getRoomDoor().setStatus(RoomDoorStatus.OPEN);
+    }
+  }
 }

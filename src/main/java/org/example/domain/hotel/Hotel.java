@@ -3,6 +3,7 @@ package org.example.domain.hotel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.example.application.PayService;
@@ -104,11 +105,15 @@ public class Hotel {
     }
   }
 
-  public void checkIn(Order order, Customer customer) {
+  public RoomCard checkIn(Order order, Customer customer) {
     order.setStatus(OrderStatus.CHECKED);
     order.getRoom().setStatus(RoomStatus.CHECKED_IN);
     order.getCustomers().add(customer);
     order.setCheckInTime(new Date());
     new CheckedInEventHandler(this).handle(new CheckedInEvent(order.getNumber()));
+    // 设置锁的密钥，并且写入密钥到房卡
+    final String key = UUID.randomUUID().toString();
+    order.getRoom().getRoomDoor().getRoomLock().setKey(key);
+    return new RoomCard(key);
   }
 }
