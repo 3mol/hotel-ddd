@@ -34,16 +34,18 @@ public class PayFactory {
     return pay;
   }
 
-  public static Pay buildRefundPay(Pay pay) {
+  public static Pay buildRefundPay(Pay pay, double radio) {
+    final Pay refundPay = new Pay();
     final String pid = UUID.randomUUID().toString();
-    pay.setId(pid);
-    pay.setMethod(pay.getMethod());
-    pay.setSerialNumber(pay.getSerialNumber());
-    pay.setThirdPartySerialNumber(pay.getThirdPartySerialNumber());
-    pay.setType(PayType.DEPOSIT_REFUND);
-    pay.setStatus(PayStatus.REFUNDED);
-    pay.setCreatedAt(new Date());
-    pay.setPaidAt(new Date());
-    return pay;
+    refundPay.setId(pid);
+    refundPay.setMethod(pay.getMethod());
+    refundPay.setSerialNumber(pay.getSerialNumber());
+    refundPay.setThirdPartySerialNumber(pay.getThirdPartySerialNumber());
+    refundPay.setType(PayType.DEPOSIT_REFUND);
+    refundPay.setStatus(PayStatus.REFUNDED);
+    refundPay.setCreatedAt(new Date());
+    refundPay.setPaidAt(new Date());
+    refundPay.setAmount(pay.getAmount() * radio);
+    return refundPay;
   }
 }

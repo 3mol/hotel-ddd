@@ -24,13 +24,10 @@ public class PayService {
     new PayEventHandler().handle(new PayEvent(order.getNumber(), payType, payMethod));
   }
 
-  public static void refund(Order order) {
+  public static void refund(Order order, PayType payType, double radio) {
     final Pay pay =
-        order.getPays().stream()
-            .filter(i -> i.getType().equals(PayType.DEPOSIT_CHARGE))
-            .findFirst()
-            .orElseThrow();
-    final Pay refundPay = PayFactory.buildRefundPay(pay);
+        order.getPays().stream().filter(i -> i.getType().equals(payType)).findFirst().orElseThrow();
+    final Pay refundPay = PayFactory.buildRefundPay(pay, radio);
     // 调用第三方退款接口
     // todo ...
     order.getPays().add(refundPay);

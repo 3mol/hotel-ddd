@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import cn.hutool.core.date.DateUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,7 +88,7 @@ public class HotelTest {
     hotel.appendRoom(room);
     // When
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer);
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
     // Then
     final Stream<Pay> payStream =
         order.getPays().stream().filter(i -> i.getStatus() == PayStatus.UNPAID);
@@ -112,7 +113,7 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer);
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
     // When
     // theHotelAcceptsAmounts
     hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
@@ -129,6 +130,57 @@ public class HotelTest {
   }
 
   @Test
+  @DisplayName("预定房间, 使用微信支付支付订金, 24小时外进行退订")
+  void hotelReserveRoom3() {
+    // Given
+    final Hotel hotel = new Hotel("1", "酒店", "地址", "电话", HotelStatus.OPEN, "");
+    final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
+    hotel.appendRoom(room);
+    final Customer customer = new Customer("小明", "身份证", "小明电话");
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-03"));
+    // When
+    // theHotelAcceptsAmounts
+    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
+    hotel.cancelReserve(order, DateUtil.parse("2020-01-01 00:00:00"));
+    // Then
+    final Stream<Pay> payStream1 =
+        order.getPays().stream().filter(i -> i.getStatus() == PayStatus.PAID);
+    final Stream<Pay> payStream2 =
+        order.getPays().stream().filter(i -> i.getStatus() == PayStatus.REFUNDED);
+    final List<Pay> collect = payStream2.collect(Collectors.toList());
+    Assertions.assertEquals(1, payStream1.count());
+    Assertions.assertEquals(1, collect.size());
+    Assertions.assertEquals(200 * 0.2 * 0.8, collect.get(0).getAmount());
+    Assertions.assertEquals(RoomStatus.FREE, order.getRoom().getStatus());
+    Assertions.assertEquals(OrderStatus.CANCELLED, order.getStatus());
+  }
+
+  @Test
+  @DisplayName("预定房间, 使用微信支付支付订金, 24小时内进行退订")
+  void hotelReserveRoom4() {
+    // Given
+    final Hotel hotel = new Hotel("1", "酒店", "地址", "电话", HotelStatus.OPEN, "");
+    final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
+    hotel.appendRoom(room);
+    final Customer customer = new Customer("小明", "身份证", "小明电话");
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-03"));
+    // When
+    // theHotelAcceptsAmounts
+    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
+    hotel.cancelReserve(order, DateUtil.parse("2020-01-02 08:00:00"));
+    // Then
+    final Stream<Pay> payStream1 =
+        order.getPays().stream().filter(i -> i.getStatus() == PayStatus.PAID);
+    final Stream<Pay> payStream2 =
+        order.getPays().stream().filter(i -> i.getStatus() == PayStatus.REFUNDED);
+    final List<Pay> collect = payStream2.collect(Collectors.toList());
+    Assertions.assertEquals(1, payStream1.count());
+    Assertions.assertEquals(0, collect.size());
+    Assertions.assertEquals(RoomStatus.FREE, order.getRoom().getStatus());
+    Assertions.assertEquals(OrderStatus.CANCELLED, order.getStatus());
+  }
+
+  @Test
   @DisplayName("预定房间成功后, 入住酒店, 打开房间门")
   void checkIn() {
     // Given
@@ -136,7 +188,7 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer);
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
     hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
     // When
     // theHotelAcceptsAmounts
@@ -158,7 +210,7 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer);
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
     hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
     // When
     // theHotelAcceptsAmounts

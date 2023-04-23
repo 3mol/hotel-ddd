@@ -10,14 +10,14 @@ import org.example.domain.user.Customer;
 
 public class OrderFactory {
 
-  public static Order buildByReserveRoom(Room targetRoom, Customer customer) {
+  public static Order buildByReserveRoom(Room targetRoom, Customer customer, Date reserveDate) {
     final Order order = new Order();
     // 生成uuid
     final String oid = UUID.randomUUID().toString();
     final String oNumber = UUID.randomUUID().toString();
     order.setId(oid);
     order.setNumber(oNumber);
-    settingReserveInfo(customer, order);
+    settingReserveInfo(customer, order, reserveDate);
     settingPayInfo(targetRoom, order);
     order.setRoom(targetRoom);
     order.setStatus(OrderStatus.PENDING);
@@ -35,10 +35,10 @@ public class OrderFactory {
     order.setPays(new ArrayList<>(payList));
   }
 
-  private static void settingReserveInfo(Customer customer, Order order) {
+  private static void settingReserveInfo(Customer customer, Order order, Date reserveDate) {
     final ReserveInfo reserve = new ReserveInfo();
     reserve.setCustomer(customer);
-    reserve.setReserveTime(new Date());
+    reserve.setReserveDate(reserveDate);
     order.setReserve(reserve);
   }
 }

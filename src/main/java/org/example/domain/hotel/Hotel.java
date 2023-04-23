@@ -1,5 +1,7 @@
 package org.example.domain.hotel;
 
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -74,13 +76,13 @@ public class Hotel {
     this.rooms.add(room);
   }
 
-  public Order reserveRoom(RoomDoor roomDoor, Customer customer) {
+  public Order reserveRoom(RoomDoor roomDoor, Customer customer, Date reserveDate) {
     final Room targetRoom =
         this.rooms.stream().filter(i -> i.getRoomDoor().equals(roomDoor)).findFirst().orElseThrow();
     if (targetRoom.getStatus() != RoomStatus.FREE) {
       throw new RuntimeException("房间不可用");
     }
-    final Order order = OrderFactory.buildByReserveRoom(targetRoom, customer);
+    final Order order = OrderFactory.buildByReserveRoom(targetRoom, customer, reserveDate);
     this.orders.add(order);
     // 发送预定消息事件
     new ReserveRoomEventHandler(this)
@@ -130,8 +132,23 @@ public class Hotel {
         this.orders.stream().filter(i -> i.getRoom().equals(room)).findFirst().orElseThrow();
     order.setStatus(OrderStatus.CHECKED_OUT);
     // 退款
-    PayService.refund(order);
+    PayService.refund(order, PayType.DEPOSIT_CHARGE, 1);
     // 发送退房消息事件
     new CheckOutEventHandler(this).handle(new CheckOutEvent(order.getNumber(), room.getNumber()));
+  }
+
+  public void cancelReserve(Order order, Date cancelDate) {
+    // 预定时间在24小时之内 不退押金
+    final long betweenHour =
+        DateUtil.between(cancelDate, order.getReserve().getReserveDate(), DateUnit.HOUR);
+    if (betweenHour <= 24) {
+      order.setStatus(OrderStatus.CANCELLED);
+      order.getRoom().setStatus(RoomStatus.FREE);
+      return;
+    }
+    // 预定时间在24小时之外 退80%押金
+    PayService.refund(order, PayType.DEPOSIT, 0.8);
+    order.setStatus(OrderStatus.CANCELLED);
+    order.getRoom().setStatus(RoomStatus.FREE);
   }
 }
