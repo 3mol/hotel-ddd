@@ -13,7 +13,7 @@ public class PayFactory {
   /** 押金 */
   public static final int DEPOSIT_CHARGE = 30;
 
-  public static Pay buildPay(Room targetRoom, PayType payType, PayStatus payStatus) {
+  public static Pay buildRefundPay(Room targetRoom, PayType payType, PayStatus payStatus) {
     final String pid = UUID.randomUUID().toString();
     final Pay pay = new Pay();
     pay.setId(pid);
@@ -31,6 +31,19 @@ public class PayFactory {
     } else if (payType == PayType.DEPOSIT_CHARGE) {
       pay.setAmount(DEPOSIT_CHARGE);
     }
+    return pay;
+  }
+
+  public static Pay buildRefundPay(Pay pay) {
+    final String pid = UUID.randomUUID().toString();
+    pay.setId(pid);
+    pay.setMethod(pay.getMethod());
+    pay.setSerialNumber(pay.getSerialNumber());
+    pay.setThirdPartySerialNumber(pay.getThirdPartySerialNumber());
+    pay.setType(PayType.DEPOSIT_REFUND);
+    pay.setStatus(PayStatus.REFUNDED);
+    pay.setCreatedAt(new Date());
+    pay.setPaidAt(new Date());
     return pay;
   }
 }

@@ -150,6 +150,30 @@ public class HotelTest {
     Assertions.assertEquals(RoomDoorStatus.OPEN, room.getRoomDoor().getStatus());
   }
 
+  @Test
+  @DisplayName("预定房间成功后, 入住酒店, 退房")
+  void checkOut() {
+    // Given
+    final Hotel hotel = new Hotel("1", "酒店", "地址", "电话", HotelStatus.OPEN, "");
+    final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
+    hotel.appendRoom(room);
+    final Customer customer = new Customer("小明", "身份证", "小明电话");
+    Order order = hotel.reserveRoom(room.getRoomDoor(), customer);
+    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
+    // When
+    // theHotelAcceptsAmounts
+    hotel.acceptPay(order, PayType.FINAL_PAYMENT, PayMethod.WECHAT, 200 * 0.8);
+    hotel.acceptPay(order, PayType.DEPOSIT_CHARGE, PayMethod.WECHAT, 30);
+    final RoomCard roomCard = hotel.checkIn(order, customer);
+    room.open(roomCard);
+    // 开门
+    hotel.checkOut(roomCard);
+    // Then
+    Assertions.assertEquals(RoomStatus.CHECKED_OUT, room.getStatus());
+    Assertions.assertEquals(OrderStatus.CHECKED_OUT, order.getStatus());
+    Assertions.assertEquals("", order.getRoom().getRoomDoor().getRoomLock().getKey());
+  }
+
   private static Double getPay(List<Pay> payList, PayType payType) {
     return payList.stream()
         .filter(i -> i.getType() == payType)

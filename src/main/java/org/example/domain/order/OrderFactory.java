@@ -3,6 +3,7 @@ package org.example.domain.order;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import org.example.domain.hotel.Room;
 import org.example.domain.user.Customer;
@@ -25,12 +26,13 @@ public class OrderFactory {
   }
 
   private static void settingPayInfo(Room targetRoom, Order order) {
-    final Pay depositPay = PayFactory.buildPay(targetRoom, PayType.DEPOSIT, PayStatus.UNPAID);
+    final Pay depositPay = PayFactory.buildRefundPay(targetRoom, PayType.DEPOSIT, PayStatus.UNPAID);
     final Pay finalPaymentPay =
-        PayFactory.buildPay(targetRoom, PayType.FINAL_PAYMENT, PayStatus.UNPAID);
+        PayFactory.buildRefundPay(targetRoom, PayType.FINAL_PAYMENT, PayStatus.UNPAID);
     final Pay depositCharge =
-        PayFactory.buildPay(targetRoom, PayType.DEPOSIT_CHARGE, PayStatus.UNPAID);
-    order.setPays(Arrays.asList(depositPay, finalPaymentPay, depositCharge));
+        PayFactory.buildRefundPay(targetRoom, PayType.DEPOSIT_CHARGE, PayStatus.UNPAID);
+    final List<Pay> payList = Arrays.asList(depositPay, finalPaymentPay, depositCharge);
+    order.setPays(new ArrayList<>(payList));
   }
 
   private static void settingReserveInfo(Customer customer, Order order) {

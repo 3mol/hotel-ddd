@@ -116,4 +116,22 @@ public class Hotel {
     order.getRoom().getRoomDoor().getRoomLock().setKey(key);
     return new RoomCard(key);
   }
+
+  public void checkOut(RoomCard roomCard) {
+    final String key = roomCard.getKey();
+    final Room room =
+        this.rooms.stream()
+            .filter(i -> i.getRoomDoor().getRoomLock().getKey().equals(key))
+            .findFirst()
+            .orElseThrow();
+    room.setStatus(RoomStatus.CHECKED_OUT);
+    room.getRoomDoor().getRoomLock().setKey("");
+    final Order order =
+        this.orders.stream().filter(i -> i.getRoom().equals(room)).findFirst().orElseThrow();
+    order.setStatus(OrderStatus.CHECKED_OUT);
+    // 退款
+    PayService.refund(order);
+    // 发送退房消息事件
+    new CheckOutEventHandler(this).handle(new CheckOutEvent(order.getNumber(), room.getNumber()));
+  }
 }
