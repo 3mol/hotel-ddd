@@ -88,7 +88,7 @@ public class HotelTest {
     hotel.appendRoom(room);
     // When
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
+    Order order = hotel.reserveRoom(room.getNumber(), customer, DateUtil.parse("2020-01-02"));
     // Then
     final Stream<Pay> payStream =
         order.getPays().stream().filter(i -> i.getStatus() == PayStatus.UNPAID);
@@ -113,7 +113,7 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
+    Order order = hotel.reserveRoom(room.getNumber(), customer, DateUtil.parse("2020-01-02"));
     // When
     // theHotelAcceptsAmounts
     hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
@@ -137,10 +137,10 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-03"));
+    Order order = hotel.reserveRoom(room.getNumber(), customer, DateUtil.parse("2020-01-03"));
+    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
     // When
     // theHotelAcceptsAmounts
-    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
     hotel.cancelReserve(order, DateUtil.parse("2020-01-01 00:00:00"));
     // Then
     final Stream<Pay> payStream1 =
@@ -163,10 +163,10 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-03"));
+    Order order = hotel.reserveRoom(room.getNumber(), customer, DateUtil.parse("2020-01-03"));
+    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
     // When
     // theHotelAcceptsAmounts
-    hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
     hotel.cancelReserve(order, DateUtil.parse("2020-01-02 08:00:00"));
     // Then
     final Stream<Pay> payStream1 =
@@ -188,13 +188,12 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
+    Order order = hotel.reserveRoom(room.getNumber(), customer, DateUtil.parse("2020-01-02"));
     hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
-    // When
-    // theHotelAcceptsAmounts
     hotel.acceptPay(order, PayType.FINAL_PAYMENT, PayMethod.WECHAT, 200 * 0.8);
     hotel.acceptPay(order, PayType.DEPOSIT_CHARGE, PayMethod.WECHAT, 30);
     final RoomCard roomCard = hotel.checkIn(order, customer);
+    // When
     // 开门
     room.open(roomCard);
     // Then
@@ -210,15 +209,14 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     final Customer customer = new Customer("小明", "身份证", "小明电话");
-    Order order = hotel.reserveRoom(room.getRoomDoor(), customer, DateUtil.parse("2020-01-02"));
+    Order order = hotel.reserveRoom(room.getNumber(), customer, DateUtil.parse("2020-01-02"));
     hotel.acceptPay(order, PayType.DEPOSIT, PayMethod.WECHAT, 200 * 0.2);
-    // When
-    // theHotelAcceptsAmounts
     hotel.acceptPay(order, PayType.FINAL_PAYMENT, PayMethod.WECHAT, 200 * 0.8);
     hotel.acceptPay(order, PayType.DEPOSIT_CHARGE, PayMethod.WECHAT, 30);
     final RoomCard roomCard = hotel.checkIn(order, customer);
-    room.open(roomCard);
     // 开门
+    room.open(roomCard);
+    // When
     hotel.checkOut(roomCard);
     // Then
     Assertions.assertEquals(RoomStatus.CHECKED_OUT, room.getStatus());

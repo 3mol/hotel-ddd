@@ -76,9 +76,9 @@ public class Hotel {
     this.rooms.add(room);
   }
 
-  public Order reserveRoom(RoomDoor roomDoor, Customer customer, Date reserveDate) {
+  public Order reserveRoom(String roomNumber, Customer customer, Date reserveDate) {
     final Room targetRoom =
-        this.rooms.stream().filter(i -> i.getRoomDoor().equals(roomDoor)).findFirst().orElseThrow();
+        this.rooms.stream().filter(i -> i.getNumber().equals(roomNumber)).findFirst().orElseThrow();
     if (targetRoom.getStatus() != RoomStatus.FREE) {
       throw new RuntimeException("房间不可用");
     }
