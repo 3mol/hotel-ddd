@@ -1,6 +1,5 @@
-package org.example.domain.hotel;
+package org.example;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -8,6 +7,16 @@ import cn.hutool.core.date.DateUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.example.domain.hotel.Employee;
+import org.example.domain.hotel.EmployeeStatus;
+import org.example.domain.hotel.Hotel;
+import org.example.domain.hotel.HotelStatus;
+import org.example.domain.hotel.RoleType;
+import org.example.domain.hotel.Room;
+import org.example.domain.hotel.RoomCard;
+import org.example.domain.hotel.RoomDoorStatus;
+import org.example.domain.hotel.RoomStatus;
+import org.example.domain.hotel.RoomType;
 import org.example.domain.order.Order;
 import org.example.domain.order.OrderStatus;
 import org.example.domain.order.Pay;
@@ -30,10 +39,10 @@ public class HotelTest {
     final Employee employee = new Employee("1", "小红", "小红电话");
     hotel.employeeOnboarding(employee, RoleType.WAITER);
     // Then
-    assertEquals(1, hotel.getEmployees().size());
+    Assertions.assertEquals(1, hotel.getEmployees().size());
     final Employee exceptionValue =
         new Employee("1", "小红", "小红电话", EmployeeStatus.ON_JOB, RoleType.WAITER);
-    assertEquals(exceptionValue, hotel.getEmployees().get(0));
+    Assertions.assertEquals(exceptionValue, hotel.getEmployees().get(0));
   }
 
   @Test
@@ -46,10 +55,10 @@ public class HotelTest {
     // When
     hotel.employeeTurnover(employee);
     // Then
-    assertEquals(1, hotel.getEmployees().size());
+    Assertions.assertEquals(1, hotel.getEmployees().size());
     final Employee exceptionValue =
         new Employee("1", "小红", "小红电话", EmployeeStatus.OFF_JOB, RoleType.WAITER);
-    assertEquals(exceptionValue, hotel.getEmployees().get(0));
+    Assertions.assertEquals(exceptionValue, hotel.getEmployees().get(0));
   }
 
   @Test
@@ -61,8 +70,8 @@ public class HotelTest {
     final Room room = new Room("1", RoomType.SINGLE, RoomStatus.FREE, 200, "401");
     hotel.appendRoom(room);
     // Then
-    assertEquals(1, hotel.getRooms().size());
-    assertEquals(RoomStatus.FREE, hotel.getRooms().get(0).getStatus());
+    Assertions.assertEquals(1, hotel.getRooms().size());
+    Assertions.assertEquals(RoomStatus.FREE, hotel.getRooms().get(0).getStatus());
     assertNotNull(hotel.getRooms().get(0).getRoomDoor());
     assertNotNull(hotel.getRooms().get(0).getRoomDoor().getRoomLock());
   }
