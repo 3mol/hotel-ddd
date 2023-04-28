@@ -10,6 +10,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>base-demo</module>
+    <module>ddd-single-demo</module>
   </modules>
 
   <properties>
