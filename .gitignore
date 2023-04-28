@@ -1,1 +1,8 @@
 /.idea/
+# 所有txt
+*.iml
+# java .gitignore
+*.class
+target/
+# out
+out/
