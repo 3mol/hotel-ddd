@@ -12,6 +12,9 @@ import org.example.domain.order.OrderId;
 import org.example.domain.order.OrderRepository;
 import org.example.domain.order.OrderStatus;
 import org.example.domain.payment.PaymentReceivedEvent;
+import org.example.domain.room.Room;
+import org.example.domain.room.RoomRepository;
+import org.example.domain.room.RoomStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class OrderService {
   @Resource OrderRepository orderRepository;
   @Resource BookingRepository bookingRepository;
+  @Resource RoomRepository roomRepository;
 
   @Resource DomainEventPublisher domainEventPublisher;
 
@@ -61,14 +65,28 @@ public class OrderService {
   }
 
   @Async
+  @Transactional
   @TransactionalEventListener
   public void listen(PaymentReceivedEvent event) {
     log.info("接受到支付被接受事件：{}", event);
     final String orderNumber = event.getSerialNumber();
     final Order order = orderRepository.findByNumber(orderNumber);
     if (order != null) {
-      order.setStatus(OrderStatus.RESERVED);
-      orderRepository.save(order);
+      // 检查房间是否被预定
+      final Room room =
+          roomRepository
+              .findById(order.getRoomId().getId())
+              .orElseThrow(() -> new RuntimeException("房间不存在"));
+      if (room.couldBeReserved()) {
+        // todo 开启任务为预定失败的订单退款
+        order.setStatus(OrderStatus.RESERVED_FAIL);
+        orderRepository.save(order);
+      } else {
+        room.setStatus(RoomStatus.RESERVED);
+        order.setStatus(OrderStatus.RESERVED);
+        roomRepository.save(room);
+        orderRepository.save(order);
+      }
     }
     log.info("支付被接受事件处理完成：{}", event);
   }

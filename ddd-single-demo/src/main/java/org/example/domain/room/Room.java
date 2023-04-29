@@ -64,4 +64,8 @@ public class Room {
       this.getRoomDoor().setRoomDoorStatus(RoomDoorStatus.OPEN);
     }
   }
+
+  public boolean couldBeReserved() {
+    return getStatus() != RoomStatus.FREE;
+  }
 }
