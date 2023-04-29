@@ -2,7 +2,7 @@ package org.example.domain.order;
 
 import java.util.Date;
 import java.util.UUID;
-import org.example.domain.hotel.Room;
+import org.example.domain.room.Room;
 
 public class PayFactory {
 

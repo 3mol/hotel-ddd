@@ -1,4 +1,4 @@
-package org.example.domain.hotel;
+package org.example.domain.room;
 
 public enum RoomLockStatus {
   /** 未锁定 */

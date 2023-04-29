@@ -10,7 +10,10 @@ import lombok.SneakyThrows;
 import org.example.application.order.BookingReq;
 import org.example.application.order.OrderResp;
 import org.example.domain.order.OrderRepository;
+import org.example.domain.order.PayStatus;
 import org.example.domain.order.RoomId;
+import org.example.domain.payment.Payment;
+import org.example.domain.payment.PaymentRepository;
 import org.example.domain.user.Customer;
 import org.example.domain.user.UserId;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +23,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 class OrderControllerTest extends BaseControllerTest {
   @Resource OrderRepository orderRepository;
+  @Resource PaymentRepository paymentRepository;
 
   @BeforeEach
   void setUp() {
@@ -54,5 +58,9 @@ class OrderControllerTest extends BaseControllerTest {
     assertNotNull(resp.getId());
     assertNotNull(resp.getNumber());
     assertNotNull(resp.getRoomId());
+
+    Thread.sleep(1000);
+    final Payment payment1 = paymentRepository.findBySerialNumber(resp.getNumber());
+    assertEquals(PayStatus.UNPAID, payment1.getStatus());
   }
 }

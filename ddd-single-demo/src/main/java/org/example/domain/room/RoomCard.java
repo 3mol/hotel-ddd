@@ -1,4 +1,4 @@
-package org.example.domain.hotel;
+package org.example.domain.room;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

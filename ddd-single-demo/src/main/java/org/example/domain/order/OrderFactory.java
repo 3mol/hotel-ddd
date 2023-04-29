@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import org.example.domain.hotel.Room;
+import org.example.domain.room.Room;
 import org.example.domain.user.Customer;
 
 public class OrderFactory {

@@ -1,22 +1,25 @@
 package org.example.domain.order;
 
+import javax.persistence.Embeddable;
+
+@Embeddable
 public class Discount {
-  private String name; // 折扣名
-  private double discount; // 折扣
+  private String discountName; // 折扣名
+  private Double discount; // 折扣
 
-  public String getName() {
-    return name;
+  public String getDiscountName() {
+    return discountName;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setDiscountName(String name) {
+    this.discountName = name;
   }
 
-  public double getDiscount() {
+  public Double getDiscount() {
     return discount;
   }
 
-  public void setDiscount(double discount) {
+  public void setDiscount(Double discount) {
     this.discount = discount;
   }
 }
