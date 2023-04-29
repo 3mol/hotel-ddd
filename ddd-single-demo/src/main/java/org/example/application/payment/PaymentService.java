@@ -1,7 +1,6 @@
 package org.example.application.payment;
 
 import java.util.Date;
-import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
@@ -22,11 +21,16 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Service
 public class PaymentService extends BaseService {
-  @Resource PaymentRepository paymentRepository;
-  @Resource RoomRepository roomRepository;
+  final PaymentRepository paymentRepository;
+  final RoomRepository roomRepository;
 
-  public PaymentService(DomainEventPublisher domainEventPublisher) {
+  public PaymentService(
+      DomainEventPublisher domainEventPublisher,
+      PaymentRepository paymentRepository,
+      RoomRepository roomRepository) {
     super(domainEventPublisher);
+    this.paymentRepository = paymentRepository;
+    this.roomRepository = roomRepository;
   }
 
   @Transactional
