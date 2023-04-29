@@ -4,6 +4,7 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
   h2:
     console:
       enabled: true
@@ -11,3 +12,6 @@ spring:
       settings:
         trace: false
         web-allow-others: false
+logging:
+  level:
+    org.hibernate: DEBUG

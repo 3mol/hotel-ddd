@@ -1,6 +1,5 @@
 package org.example.domain.order;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -15,13 +14,13 @@ public class OrderFactory {
     // 生成uuid
     final String oid = UUID.randomUUID().toString();
     final String oNumber = UUID.randomUUID().toString();
-    order.setId(oid);
+    // order.setId(oid);
     order.setNumber(oNumber);
     settingReserveInfo(customer, order, reserveDate);
     settingPayInfo(targetRoom, order);
-    order.setRoom(targetRoom);
+    // order.setRoom(targetRoom);
     order.setStatus(OrderStatus.PENDING);
-    order.setCustomers(new ArrayList<>());
+    //    order.setCustomers(new ArrayList<>());
     return order;
   }
 
@@ -32,13 +31,13 @@ public class OrderFactory {
     final Pay depositCharge =
         PayFactory.buildRefundPay(targetRoom, PayType.DEPOSIT_CHARGE, PayStatus.UNPAID);
     final List<Pay> payList = Arrays.asList(depositPay, finalPaymentPay, depositCharge);
-    order.setPays(new ArrayList<>(payList));
+    // order.setPays(new ArrayList<>(payList));
   }
 
   private static void settingReserveInfo(Customer customer, Order order, Date reserveDate) {
     final ReserveInfo reserve = new ReserveInfo();
     reserve.setCustomer(customer);
     reserve.setReserveDate(reserveDate);
-    order.setReserve(reserve);
+    // order.setReserve(reserve);
   }
 }

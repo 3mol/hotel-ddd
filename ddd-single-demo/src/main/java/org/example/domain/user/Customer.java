@@ -1,8 +1,10 @@
 package org.example.domain.user;
 
+import javax.persistence.Embeddable;
 import lombok.Data;
 
 @Data
+@Embeddable
 public class Customer {
   private String name;
   private String idCard;
@@ -13,4 +15,6 @@ public class Customer {
     this.idCard = idCard;
     this.phone = phone;
   }
+
+  public Customer() {}
 }
