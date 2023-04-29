@@ -1,0 +1,159 @@
+@startuml
+'https://plantuml.com/zh/class-diagram
+
+class 旅店 <<root>> {
+    - String id
+    - String name
+    - String address
+    - String phone
+    - String status
+    - String description
+    - open()
+    - close()
+}
+
+class 履约单 <<root>> {
+    - String id
+    - String number // 订单号
+    - RoomId roomId // 房间id + 房间号
+    - String status // 状态 [未入住、已入住、已退房]
+    - List<旅客> customers // 旅客信息
+    - String phoneOfCheckIn? // 入住登记的手机号 [入住后必须登记]
+    - UserId orderedUserId? // 下单的用户 [在线预定]
+    - Date checkInTime // 入住时间
+    - Date checkOutTime // 退房时间
+}
+
+class 房间 <<root>> {
+    - String id
+    - String hotelId // 旅店id
+    - OrderId orderId? // 订单id+订单号
+    - String type // 类型 [单人间、双人间]
+    - String status // 状态 [空闲、已预定、已入住]
+    - double price // 价格
+    - String number // 房间号
+    - Discount discount? // 折扣
+}
+
+class 折扣 {
+    - String name // 折扣名
+    - double discount // 折扣
+}
+
+class 预定 <<entity>> {
+    - String id
+    - String number // 预约号
+    - String type // 预定方式：网络、电话、现场
+    - String status // 预定状态：待付款、已预定、已取消
+    - String roomNumber // 预定房间号
+    - Customer customer // 旅客信息
+    - String phone? // 预留的手机号
+    - Date checkInTime // 预估入住时间
+    - double deposit // 订金
+}
+
+class 支付 <<root>> {
+    - String id
+    - String method // 支付方式 [支付宝、微信、现金]
+    - String serialNumber? // 流水号 [一般与订单号相同]
+    - String thirdPartySerialNumber? // 第三方流水号 [支付成功后返回]
+    - String type // 类型 [常规、订金、住宿尾款、住宿费用、押金]
+    - String status // 支付状态 [已支付、未支付、已退款]
+    - double amount // 支付金额
+    - Date time // 支付时间
+}
+
+class 旅客 {
+    - String name // 姓名
+    - String idNumber // 身份证号
+}
+
+class 房门 <<entity>>{
+    - String id
+    - RoomNo roomNo // 房间号
+    - RoomLock roomLock // 房门锁
+    - String status // 状态 [开启、关闭]
+    + open(RoomCard roomCard)
+}
+
+class 房卡 {
+    - String id
+    - String roomNumber // 房间号
+    - String key // 密钥
+}
+
+class 房门锁 {
+    - String id
+    - String roomNumber // 房间号
+    - String key // 密钥
+    - String status // 状态 [未锁定、锁定]
+}
+
+class 雇员  <<entity>> {
+    - String id
+    - String name
+    - String phone
+    - String status // 状态 [在职、离职]
+    - String role // 角色 [服务员、经理、清洁员]
+}
+
+class 用户 {
+    - String id
+    - String name
+    - String phone
+    - String pwd
+    - String idNumber
+    - String status // 状态 [正常、黑名单]
+    - 会员卡 memberCard // 会员卡
+}
+
+class 会员卡 {
+    - String level // 等级 [普通、银卡、金卡、钻石卡]
+    - double points // 积分
+    - double discount // 折扣
+}
+
+
+abstract 报表 {
+    - Date startTime // 开始时间
+    - Date endTime // 结束时间
+    - String name // 报表名称
+    - String type // 报表类型 [预定报表、入住报表]
+}
+
+class 预定报表 extends 报表 {
+    - String id
+    - Integer 预定总数量
+    - Integer 预定成功数量
+    - Integer 取消预定数量
+    - double 预定总金额
+    - double 预定成功的金额
+    - double 取消预定的金额
+}
+
+class 入住报表 extends 报表 {
+    - String id
+    - Integer 入住人数
+    - Integer 入住房次
+    - Integer 置空率 // [入住房次/天数/总房间数]
+    - double 入住总金额
+    - double 优惠总金额
+}
+旅店 o-- 雇员
+旅店 *. 履约单
+旅店 o-.> 房间
+
+
+履约单 o--> 预定
+履约单 o-.> 房间
+履约单 - 旅客
+支付 <.-o 履约单
+
+旅客 -- 预定
+房间 -- 房门
+房门 --> 房卡
+房门 --> 房门锁
+房间 -- 折扣
+用户 -- 会员卡
+履约单 -.--> 用户
+@enduml

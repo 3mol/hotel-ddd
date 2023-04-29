@@ -21,7 +21,7 @@ public class HotelController {
 
   // 营业
   @PutMapping("/open/{id}")
-  public void open(@PathVariable(value = "id") Long id) {
+  public void open(@PathVariable Long id) {
     // ...
     hotelService.open(id);
   }
@@ -31,7 +31,7 @@ public class HotelController {
    */
 
   @PutMapping("/close/{id}")
-  public void close(Long id) {
+  public void close(@PathVariable Long id) {
     // ...
     hotelService.close(id);
   }
