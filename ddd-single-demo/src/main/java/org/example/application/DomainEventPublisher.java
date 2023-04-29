@@ -3,6 +3,7 @@ package org.example.application;
 import javax.annotation.Resource;
 import org.example.domain.order.OrderBookedEvent;
 import org.example.domain.payment.PaymentReceivedEvent;
+import org.example.domain.room.RoomAppendedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,10 @@ public class DomainEventPublisher {
   }
 
   public void publish(OrderBookedEvent event) {
+    applicationEventPublisher.publishEvent(event);
+  }
+
+  public void publish(RoomAppendedEvent event) {
     applicationEventPublisher.publishEvent(event);
   }
 }
