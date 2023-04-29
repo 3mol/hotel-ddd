@@ -11,8 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HotelService {
-  @Resource
-  HotelRepository hotelRepository;
+  @Resource HotelRepository hotelRepository;
 
   // 营业
   @Transactional
@@ -23,9 +22,7 @@ public class HotelService {
     hotelRepository.save(hotel);
   }
 
-  /**
-   * 歇业
-   */
+  /** 歇业 */
   @Transactional
   public void close(Long id) {
     // ...
@@ -43,13 +40,13 @@ public class HotelService {
   public HotelResp append(AppendHotelReq hotel) {
     // 工厂
     final Hotel addHotel =
-       new Hotel(
-          null,
-          hotel.getName(),
-          hotel.getAddress(),
-          hotel.getPhone(),
-          HotelStatus.CLOSE,
-          hotel.getDescription());
+        new Hotel(
+            null,
+            hotel.getName(),
+            hotel.getAddress(),
+            hotel.getPhone(),
+            HotelStatus.CLOSE,
+            hotel.getDescription());
     final Hotel save = hotelRepository.save(addHotel);
     // 转换
     return convert(save);

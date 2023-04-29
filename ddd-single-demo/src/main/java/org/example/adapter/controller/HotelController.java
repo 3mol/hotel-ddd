@@ -4,7 +4,6 @@ import javax.annotation.Resource;
 import org.example.application.hotel.HotelService;
 import org.example.client.hotel.AppendHotelReq;
 import org.example.client.hotel.HotelResp;
-import org.example.domain.hotel.Hotel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,8 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/hotels")
 public class HotelController {
-  @Resource
-  HotelService hotelService;
+  @Resource HotelService hotelService;
 
   // 营业
   @PutMapping("/open/{id}")
@@ -26,10 +24,7 @@ public class HotelController {
     hotelService.open(id);
   }
 
-  /**
-   * 歇业
-   */
-
+  /** 歇业 */
   @PutMapping("/close/{id}")
   public void close(@PathVariable Long id) {
     // ...
