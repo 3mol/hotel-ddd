@@ -14,4 +14,4 @@ spring:
         web-allow-others: false
 logging:
   level:
-    org.hibernate: DEBUG
+    org.hibernate: INFO

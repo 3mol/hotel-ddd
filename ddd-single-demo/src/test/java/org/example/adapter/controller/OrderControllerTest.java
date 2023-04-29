@@ -9,11 +9,13 @@ import javax.annotation.Resource;
 import lombok.SneakyThrows;
 import org.example.application.order.BookingReq;
 import org.example.application.order.OrderResp;
-import org.example.domain.order.OrderRepository;
+import org.example.application.room.AppendRoomReq;
+import org.example.application.room.RoomService;
 import org.example.domain.order.PayStatus;
 import org.example.domain.order.RoomId;
 import org.example.domain.payment.Payment;
 import org.example.domain.payment.PaymentRepository;
+import org.example.domain.room.RoomType;
 import org.example.domain.user.Customer;
 import org.example.domain.user.UserId;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,12 +24,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
 class OrderControllerTest extends BaseControllerTest {
-  @Resource OrderRepository orderRepository;
   @Resource PaymentRepository paymentRepository;
+  @Resource RoomService roomService;
 
   @BeforeEach
   void setUp() {
     System.out.println("web 端口：" + port);
+    final AppendRoomReq appendRoomReq = new AppendRoomReq();
+    appendRoomReq.setType(RoomType.SINGLE);
+    appendRoomReq.setPrice(100.0D);
+    appendRoomReq.setNumber("401");
+    roomService.appendRoom(appendRoomReq);
   }
 
   @Test
@@ -36,7 +43,7 @@ class OrderControllerTest extends BaseControllerTest {
     final BookingReq bookingReq = new BookingReq();
     final RoomId roomId = new RoomId();
     roomId.setId(1L);
-    roomId.setNumber("234");
+    roomId.setNumber("401");
     bookingReq.setRoomId(roomId);
     final Customer customer = new Customer();
     customer.setPhone("10086");
@@ -59,8 +66,10 @@ class OrderControllerTest extends BaseControllerTest {
     assertNotNull(resp.getNumber());
     assertNotNull(resp.getRoomId());
 
-    Thread.sleep(1000);
+    Thread.sleep(200);
+    // 事件会产生支付信息，20元的待支付信息
     final Payment payment1 = paymentRepository.findBySerialNumber(resp.getNumber());
     assertEquals(PayStatus.UNPAID, payment1.getStatus());
+    assertEquals(20, payment1.getAmount());
   }
 }
