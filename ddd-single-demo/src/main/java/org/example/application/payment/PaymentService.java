@@ -65,7 +65,7 @@ public class PaymentService extends BaseService {
     domainEventPublisher.publish(paymentReceivedEvent);
   }
 
-  @Async
+  @Async // mark 不知道为什么删除Async后事务不会提交
   @TransactionalEventListener
   public void listen(OrderBookedEvent event) {
     log.info("handling event: {}", event);
@@ -78,6 +78,7 @@ public class PaymentService extends BaseService {
     // 创建支付信息
     final List<Payment> payments = getPaymentsForBooked(event, room, checkInTime);
     paymentRepository.saveAll(payments);
+    log.info("save payments: {}", payments);
     log.info("handled event: {}", event);
   }
 

@@ -53,6 +53,7 @@ public class Order {
   }
 
   public void checkOut() {
+    this.checkOutTime = new Date();
     this.status = OrderStatus.CHECKED_OUT;
   }
 }

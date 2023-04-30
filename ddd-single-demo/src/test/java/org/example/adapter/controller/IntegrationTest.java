@@ -1,9 +1,10 @@
 package org.example.adapter.controller;
 
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -98,9 +99,18 @@ public class IntegrationTest {
   }
 
   private void getUnpaidPayment() {
+    tryWaitEventTranslation(1);
     this.allUnpaidPayment = paymentService.findAllUnpaidPayment(bookedOrder.getNumber());
     log.info("allUnpaidPayment: {}", allUnpaidPayment);
     Assertions.assertEquals(3, allUnpaidPayment.size());
+  }
+
+  private static void tryWaitEventTranslation(int seconds) {
+    try {
+      TimeUnit.SECONDS.sleep(seconds);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void checkOut() {
@@ -164,7 +174,7 @@ public class IntegrationTest {
     bookingReq.setRoomId(new RoomId(room.getId(), room.getNumber()));
     bookingReq.setCustomer(new Customer("张三", "88888888", null));
     bookingReq.setPhone("110");
-    bookingReq.setCheckInDate(new Date());
+    bookingReq.setCheckInDate(DateUtil.parseDate("2023-04-30"));
     bookingReq.setUserId(new UserId(1L, "张三"));
     this.bookedOrder = orderService.booking(bookingReq);
     log.info("booking:{}", this.bookedOrder);
