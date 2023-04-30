@@ -33,4 +33,10 @@ public class Payment {
     this.paidAt = new Date();
     return new PaymentReceivedEvent(this.id, this.serialNumber, this.type);
   }
+
+  /** 取消时，未支付的订单直接进入取消状态，已支付的订单将进入退款中状态 */
+  public void cancel() {
+    final boolean unpaid = this.status == PayStatus.UNPAID;
+    this.status = unpaid ? PayStatus.CANCELLED : PayStatus.REFUNDING;
+  }
 }

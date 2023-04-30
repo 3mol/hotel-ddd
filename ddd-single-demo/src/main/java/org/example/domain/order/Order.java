@@ -56,4 +56,11 @@ public class Order {
     this.checkOutTime = new Date();
     this.status = OrderStatus.CHECKED_OUT;
   }
+
+  public void cancel() {
+    if (this.status != OrderStatus.PENDING) {
+      throw new IllegalStateException("只有待付款、已付款状态的订单可取消");
+    }
+    this.status = OrderStatus.CANCELLED;
+  }
 }

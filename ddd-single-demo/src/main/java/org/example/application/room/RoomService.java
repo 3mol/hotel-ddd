@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
 import org.example.domain.order.Discount;
+import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderCheckedInEvent;
 import org.example.domain.order.OrderCheckedOutEvent;
 import org.example.domain.order.RoomId;
@@ -75,6 +76,19 @@ public class RoomService extends BaseService {
     room.setStatus(RoomStatus.CHECKED_IN);
     roomRepository.save(room);
     log.info("房间状态更新成功！{}", RoomStatus.CHECKED_IN);
+  }
+
+  @EventListener
+  @Transactional
+  public void listener(OrderCancelledEvent event) {
+    // 订单取消事件，房间释放
+    log.info("OrderCancelledEvent:{}", event);
+    final RoomId roomId = event.getRoomId();
+    final Room room =
+        roomRepository.findById(roomId.getId()).orElseThrow(() -> new RuntimeException("房间不存在！"));
+    room.setStatus(RoomStatus.FREE);
+    roomRepository.save(room);
+    log.info("OrderCancelledEvent done！{}", RoomStatus.FREE);
   }
 
   @EventListener

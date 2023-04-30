@@ -2,6 +2,7 @@ package org.example.application;
 
 import javax.annotation.Resource;
 import org.example.domain.order.OrderBookedEvent;
+import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderCheckedInEvent;
 import org.example.domain.order.OrderCheckedOutEvent;
 import org.example.domain.payment.PaymentReceivedEvent;
@@ -31,5 +32,9 @@ public class DomainEventPublisher {
 
   public void publish(OrderCheckedOutEvent orderCheckedOutEvent) {
     applicationEventPublisher.publishEvent(orderCheckedOutEvent);
+  }
+
+  public void publish(OrderCancelledEvent orderCancelledEvent) {
+    applicationEventPublisher.publishEvent(orderCancelledEvent);
   }
 }

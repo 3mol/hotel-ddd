@@ -9,6 +9,7 @@ import org.example.application.room.RoomService;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.Order;
 import org.example.domain.order.OrderBookedEvent;
+import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderCheckedInEvent;
 import org.example.domain.order.OrderCheckedOutEvent;
 import org.example.domain.order.OrderId;
@@ -59,16 +60,23 @@ public class OrderService {
     // 持久化聚合
     bookingRepository.save(booking);
 
-    final OrderResp orderResp = new OrderResp();
-    orderResp.setId(order.getId());
-    orderResp.setNumber(order.getNumber());
-    orderResp.setRoomId(order.getRoomId());
-    orderResp.setStatus(order.getStatus());
     // 发布预定事件
     final OrderBookedEvent orderBookedEvent =
         new OrderBookedEvent(new OrderId(order.getId(), order.getNumber()), order.getRoomId());
     domainEventPublisher.publish(orderBookedEvent);
-    return orderResp;
+    return OrderResp.of(order);
+  }
+
+  @Transactional
+  public OrderResp cancel(CancelReq cancelReq) {
+    final OrderId orderId = cancelReq.getOrderId();
+    final Order order = orderRepository.getOne(orderId.getId());
+    order.cancel();
+    // 发布事件
+    final OrderCancelledEvent orderCancelledEvent =
+        new OrderCancelledEvent(new OrderId(order.getId(), order.getNumber()), order.getRoomId());
+    domainEventPublisher.publish(orderCancelledEvent);
+    return OrderResp.of(order);
   }
 
   @Transactional
