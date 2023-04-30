@@ -8,6 +8,8 @@ import org.example.application.DomainEventPublisher;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.Order;
 import org.example.domain.order.OrderBookedEvent;
+import org.example.domain.order.OrderCheckedInEvent;
+import org.example.domain.order.OrderCheckedOutEvent;
 import org.example.domain.order.OrderId;
 import org.example.domain.order.OrderRepository;
 import org.example.domain.order.OrderStatus;
@@ -23,11 +25,15 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Service
 public class OrderService {
-  @Resource OrderRepository orderRepository;
-  @Resource BookingRepository bookingRepository;
-  @Resource RoomRepository roomRepository;
+  @Resource
+  OrderRepository orderRepository;
+  @Resource
+  BookingRepository bookingRepository;
+  @Resource
+  RoomRepository roomRepository;
 
-  @Resource DomainEventPublisher domainEventPublisher;
+  @Resource
+  DomainEventPublisher domainEventPublisher;
 
   @Transactional
   public OrderResp booking(BookingReq bookingReq) {
@@ -57,10 +63,49 @@ public class OrderService {
     orderResp.setId(order.getId());
     orderResp.setNumber(order.getNumber());
     orderResp.setRoomId(order.getRoomId());
+    orderResp.setStatus(order.getStatus());
     // 发布预定事件
     final OrderBookedEvent orderBookedEvent =
-        new OrderBookedEvent(new OrderId(order.getId(), order.getNumber()), order.getRoomId());
+       new OrderBookedEvent(new OrderId(order.getId(), order.getNumber()), order.getRoomId());
     domainEventPublisher.publish(orderBookedEvent);
+    return orderResp;
+  }
+
+  @Transactional
+  public OrderResp checkIn(CheckInReq req) {
+    final Long id = req.getOrderId().getId();
+    final Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("订单不存在"));
+    order.checkIn(req.getCustomer(), req.getPhone());
+    // 持久化聚合
+    orderRepository.save(order);
+    final OrderResp orderResp = new OrderResp();
+    orderResp.setId(order.getId());
+    orderResp.setNumber(order.getNumber());
+    orderResp.setRoomId(order.getRoomId());
+    orderResp.setStatus(order.getStatus());
+    // 发布入住事件
+    final OrderCheckedInEvent orderCheckedInEvent =
+       new OrderCheckedInEvent(new OrderId(order.getId(), order.getNumber()), order.getRoomId());
+    domainEventPublisher.publish(orderCheckedInEvent);
+    return orderResp;
+  }
+
+  @Transactional
+  public OrderResp checkOut(CheckOutReq req) {
+    final Long id = req.getOrderId().getId();
+    final Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("订单不存在"));
+    order.checkOut();
+    // 持久化聚合
+    orderRepository.save(order);
+    final OrderResp orderResp = new OrderResp();
+    orderResp.setId(order.getId());
+    orderResp.setNumber(order.getNumber());
+    orderResp.setRoomId(order.getRoomId());
+    orderResp.setStatus(order.getStatus());
+    // 发布退房事件
+    final OrderCheckedOutEvent orderCheckedOutEvent =
+       new OrderCheckedOutEvent(new OrderId(order.getId(), order.getNumber()), order.getRoomId());
+    domainEventPublisher.publish(orderCheckedOutEvent);
     return orderResp;
   }
 
@@ -74,9 +119,9 @@ public class OrderService {
     if (order != null) {
       // 检查房间是否被预定
       final Room room =
-          roomRepository
-              .findById(order.getRoomId().getId())
-              .orElseThrow(() -> new RuntimeException("房间不存在"));
+         roomRepository
+            .findById(order.getRoomId().getId())
+            .orElseThrow(() -> new RuntimeException("房间不存在"));
       if (room.couldBeReserved()) {
         // todo 开启任务为预定失败的订单退款
         order.setStatus(OrderStatus.RESERVED_FAIL);
