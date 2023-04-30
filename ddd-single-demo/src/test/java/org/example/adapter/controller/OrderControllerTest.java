@@ -1,5 +1,6 @@
 package org.example.adapter.controller;
 
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,8 +69,8 @@ class OrderControllerTest extends BaseControllerTest {
 
     Thread.sleep(200);
     // 事件会产生支付信息，20元的待支付信息
-    final Payment payment1 = paymentRepository.findBySerialNumber(resp.getNumber());
-    assertEquals(PayStatus.UNPAID, payment1.getStatus());
-    assertEquals(20, payment1.getAmount());
+    final List<Payment> payments = paymentRepository.listBySerialNumber(resp.getNumber());
+    assertEquals(PayStatus.UNPAID, payments.get(0).getStatus());
+    assertEquals(20, payments.get(0).getAmount());
   }
 }

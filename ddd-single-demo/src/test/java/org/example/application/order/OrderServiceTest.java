@@ -1,7 +1,9 @@
 package org.example.application.order;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.example.application.DomainEventPublisher;
+import org.example.application.payment.PaymentService;
 import org.example.domain.order.OrderCheckedInEvent;
 import org.example.domain.order.OrderCheckedOutEvent;
 import org.example.domain.order.RoomId;
@@ -16,6 +18,8 @@ import javax.annotation.Resource;
 import org.example.adapter.controller.BaseControllerTest;
 import org.example.domain.order.OrderRepository;
 import org.example.domain.order.OrderStatus;
+import org.example.domain.payment.Payment;
+import org.example.domain.payment.PaymentRepository;
 import org.example.domain.user.Customer;
 import org.junit.Assert;
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,6 +37,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 class OrderServiceTest {
   @Mock
   OrderRepository orderRepository;
+  @Mock
+  PaymentService paymentService;
   @InjectMocks
   OrderService orderService;
   @Mock
@@ -46,15 +52,14 @@ class OrderServiceTest {
     final RoomId roomId = new RoomId();
     roomId.setId(1L);
     roomId.setNumber("roomNumber");
-
     order.setRoomId(roomId);
     order.setStatus(OrderStatus.RESERVED);
     order.setCustomers(Lists.newArrayList());
     order.setPhoneOnCheckedIn(null);
     order.setCheckInTime(null);
     order.setCheckOutTime(null);
-
     when(orderRepository.findById(any())).thenReturn(Optional.of(order));
+    when(paymentService.hasUnpaidPayment(any())).thenReturn(false);
     final CheckInReq req = new CheckInReq();
     req.setOrderId(new OrderId(1L, "number"));
     final ArrayList<Customer> customer = Lists.newArrayList();

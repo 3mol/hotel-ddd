@@ -1,5 +1,6 @@
 package org.example.application.payment;
 
+import java.util.Arrays;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,6 +57,29 @@ class PaymentServiceTest {
     // then
     assertEquals(PayStatus.PAID, payment.getStatus());
     verify(domainEventPublisher, new Times(1)).publish(any(PaymentReceivedEvent.class));
+  }
+
+  @Test
+  void payForCheckIn() {
+    // given
+    final Payment payment1 = getPayment();
+    payment1.setType(PayType.FINAL_PAYMENT);
+    final Payment payment2 = getPayment();
+    payment2.setType(PayType.DEPOSIT_CHARGE);
+
+    when(paymentRepository.findAllById(any())).thenReturn(Arrays.asList(payment1, payment2));
+    final CheckInPaymentReq req = new CheckInPaymentReq();
+    req.setPaymentIds(Arrays.asList(
+       new PaymentId(payment1.getId(), payment1.getSerialNumber()),
+       new PaymentId(payment2.getId(), payment2.getSerialNumber())));
+    req.setPayMethod(PayMethod.WECHAT);
+    req.setThirdPartySerialNumber("ThirdPartySerialNumber");
+    // when
+    paymentService.payForCheckIn(req);
+    // then
+    assertEquals(PayStatus.PAID, payment1.getStatus());
+    assertEquals(PayStatus.PAID, payment2.getStatus());
+    verify(domainEventPublisher, new Times(2)).publish(any(PaymentReceivedEvent.class));
   }
 
   private static Payment getPayment() {

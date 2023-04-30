@@ -1,10 +1,12 @@
 package org.example.application.order;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.DomainEventPublisher;
+import org.example.application.payment.PaymentService;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.Order;
 import org.example.domain.order.OrderBookedEvent;
@@ -13,7 +15,10 @@ import org.example.domain.order.OrderCheckedOutEvent;
 import org.example.domain.order.OrderId;
 import org.example.domain.order.OrderRepository;
 import org.example.domain.order.OrderStatus;
+import org.example.domain.order.PayStatus;
+import org.example.domain.payment.Payment;
 import org.example.domain.payment.PaymentReceivedEvent;
+import org.example.domain.payment.PaymentRepository;
 import org.example.domain.room.Room;
 import org.example.domain.room.RoomRepository;
 import org.example.domain.room.RoomStatus;
@@ -34,6 +39,8 @@ public class OrderService {
 
   @Resource
   DomainEventPublisher domainEventPublisher;
+  @Resource
+  PaymentService paymentService;
 
   @Transactional
   public OrderResp booking(BookingReq bookingReq) {
@@ -75,6 +82,9 @@ public class OrderService {
   public OrderResp checkIn(CheckInReq req) {
     final Long id = req.getOrderId().getId();
     final Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("订单不存在"));
+    if (paymentService.hasUnpaidPayment(order.getNumber())) {
+      throw new RuntimeException("订单未支付!");
+    }
     order.checkIn(req.getCustomer(), req.getPhone());
     // 持久化聚合
     orderRepository.save(order);

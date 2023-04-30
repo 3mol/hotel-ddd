@@ -3,6 +3,7 @@ package org.example.application.payment;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
@@ -11,6 +12,7 @@ import org.example.domain.order.PayStatus;
 import org.example.domain.order.PayType;
 import org.example.domain.order.RoomId;
 import org.example.domain.payment.Payment;
+import org.example.domain.payment.PaymentId;
 import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.payment.PaymentRepository;
 import org.example.domain.room.Room;
@@ -84,4 +86,33 @@ public class PaymentService extends BaseService {
     log.info("handled event: {}", event);
   }
 
+  /**
+   * 同时支付尾款和押金
+   *
+   * @param req ~
+   */
+  public void payForCheckIn(CheckInPaymentReq req) {
+    final List<Payment> paymentList = paymentRepository
+       .findAllById(req.getPaymentIds().stream().map(PaymentId::getId).collect(Collectors.toList()));
+
+    if (paymentList.stream().allMatch(i -> i.getStatus() == PayStatus.PAID)) {
+      throw new RuntimeException("该订单已经支付！");
+    }
+    if (paymentList.stream().anyMatch(i -> i.getStatus() == PayStatus.PAID)) {
+      throw new RuntimeException("该订单已部分支付！");
+    }
+    // todo 校验第三方支付平台，是否存在该流水是否已经支付
+    final List<PaymentReceivedEvent> paymentReceivedEvents = paymentList.stream().map(i -> i.receivePay(req.getPayMethod(), req.getThirdPartySerialNumber())).collect(Collectors.toList());
+    paymentRepository.saveAll(paymentList);
+    // 发送支付成功事件
+    paymentReceivedEvents.forEach(e -> domainEventPublisher.publish(e));
+  }
+
+  public boolean hasUnpaidPayment(String number) {
+    final List<Payment> payments = paymentRepository.listBySerialNumber(number);
+    if (payments.isEmpty()) {
+      throw new RuntimeException("支付信息不存在！");
+    }
+    return payments.stream().anyMatch(i -> i.getStatus() == PayStatus.UNPAID);
+  }
 }
