@@ -2,6 +2,7 @@ package org.example.application.payment;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +27,9 @@ import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.payment.PaymentRepository;
 import org.example.domain.room.Room;
 import org.example.domain.room.RoomRepository;
+import org.example.infrastructure.gateway.PlatformPaymentGateway;
+import org.example.infrastructure.gateway.PlatformPaymentGatewayFactory;
+import org.example.infrastructure.gateway.WechatPlatformPaymentGatewayImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +45,7 @@ class PaymentServiceTest {
   @Mock PaymentRepository paymentRepository;
   @Mock RoomRepository roomRepository;
   @Mock BookingRepository bookingRepository;
+  @Mock PlatformPaymentGatewayFactory platformPaymentGatewayFactory;
   @InjectMocks PaymentService paymentService;
 
   @Test
@@ -48,6 +53,12 @@ class PaymentServiceTest {
     // given
     final Payment payment = getPayment();
     when(paymentRepository.findById(any())).thenReturn(Optional.of(payment));
+    final PlatformPaymentGateway wechatPlatformPaymentGateway =
+        mock(WechatPlatformPaymentGatewayImpl.class);
+    when(wechatPlatformPaymentGateway.getPaymentStatusFromPlatform(any()))
+        .thenReturn(PayStatus.PAID);
+    when(platformPaymentGatewayFactory.create(PayMethod.WECHAT))
+        .thenReturn(wechatPlatformPaymentGateway);
     final BookingPaymentReq req = new BookingPaymentReq();
     req.setPaymentId(new PaymentId(payment.getId(), payment.getSerialNumber()));
     req.setPayMethod(PayMethod.WECHAT);

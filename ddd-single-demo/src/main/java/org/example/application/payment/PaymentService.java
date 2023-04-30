@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
@@ -14,6 +13,7 @@ import org.example.domain.order.OrderBookedEvent;
 import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderId;
 import org.example.domain.order.OrderRepository;
+import org.example.domain.order.PayMethod;
 import org.example.domain.order.PayStatus;
 import org.example.domain.order.PayType;
 import org.example.domain.order.RoomId;
@@ -23,6 +23,8 @@ import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.payment.PaymentRepository;
 import org.example.domain.room.Room;
 import org.example.domain.room.RoomRepository;
+import org.example.infrastructure.gateway.PlatformPaymentGateway;
+import org.example.infrastructure.gateway.PlatformPaymentGatewayFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -34,20 +36,23 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class PaymentService extends BaseService {
   final PaymentRepository paymentRepository;
   final RoomRepository roomRepository;
-  @Resource OrderRepository orderRepository;
-  @Resource private BookingRepository bookingRepository;
+  final OrderRepository orderRepository;
+  final BookingRepository bookingRepository;
+  final PlatformPaymentGatewayFactory platformPaymentGatewayFactory;
 
   public PaymentService(
       DomainEventPublisher domainEventPublisher,
       PaymentRepository paymentRepository,
       RoomRepository roomRepository,
       OrderRepository orderRepository,
-      BookingRepository bookingRepository) {
+      BookingRepository bookingRepository,
+      PlatformPaymentGatewayFactory platformPaymentGatewayFactory) {
     super(domainEventPublisher);
     this.paymentRepository = paymentRepository;
     this.roomRepository = roomRepository;
     this.orderRepository = orderRepository;
     this.bookingRepository = bookingRepository;
+    this.platformPaymentGatewayFactory = platformPaymentGatewayFactory;
   }
 
   @Transactional
@@ -60,6 +65,16 @@ public class PaymentService extends BaseService {
       throw new RuntimeException("该订单已经支付！");
     }
     // todo 校验第三方支付平台，是否存在该流水是否已经支付
+    final PlatformPaymentGateway<?, ?> platformPaymentGateway =
+        platformPaymentGatewayFactory.create(PayMethod.WECHAT);
+    final PayStatus payStatus =
+        platformPaymentGateway.getPaymentStatusFromPlatform(req.getThirdPartySerialNumber());
+    if (payStatus == null) {
+      throw new RuntimeException("该平台流水号在平台上查询失败！");
+    }
+    if (payStatus != PayStatus.PAID) {
+      throw new RuntimeException("该订单未支付成功！");
+    }
     final PaymentReceivedEvent paymentReceivedEvent =
         payment.receivePay(req.getPayMethod(), req.getThirdPartySerialNumber());
     paymentRepository.save(payment);
@@ -102,9 +117,9 @@ public class PaymentService extends BaseService {
     // 第三方平台退款成功事件，修改支付状态
     log.info("PaymentRefundedEvent:{}", event);
     final List<Payment> payments =
-        paymentRepository.findAllBySerialNumber(event.getPaymentId().getSerialNumber());
+        paymentRepository.findAllBySerialNumber(event.getThirdPartySerialNumber());
     payments.stream()
-        .filter(i -> i.getThirdPartySerialNumber().equals(event.getThirdPartySerialNumber()))
+        .filter(i -> i.getStatus() == PayStatus.REFUNDING)
         .forEach(i -> i.setStatus(PayStatus.REFUNDED));
     log.info("PaymentRefundedEvent done！");
   }

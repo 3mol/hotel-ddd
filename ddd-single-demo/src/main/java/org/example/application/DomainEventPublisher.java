@@ -1,6 +1,7 @@
 package org.example.application;
 
 import javax.annotation.Resource;
+import org.example.application.payment.PaymentRefundedEvent;
 import org.example.domain.order.OrderBookedEvent;
 import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderCheckedInEvent;
@@ -36,5 +37,9 @@ public class DomainEventPublisher {
 
   public void publish(OrderCancelledEvent orderCancelledEvent) {
     applicationEventPublisher.publishEvent(orderCancelledEvent);
+  }
+
+  public void publish(PaymentRefundedEvent paymentRefundedEvent) {
+    applicationEventPublisher.publishEvent(paymentRefundedEvent);
   }
 }
