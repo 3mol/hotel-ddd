@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
@@ -38,5 +37,4 @@ public class CustomerListConverter implements AttributeConverter<List<Customer>,
     }
     return users;
   }
-
 }

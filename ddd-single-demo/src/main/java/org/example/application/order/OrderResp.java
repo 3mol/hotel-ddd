@@ -10,5 +10,4 @@ public class OrderResp {
   private String number; // 订单号;
   private RoomId roomId; // 房间;
   private OrderStatus status;
-
 }

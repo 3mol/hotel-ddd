@@ -1,7 +1,5 @@
 package org.example.application.payment;
 
-import java.util.Arrays;
-import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -9,7 +7,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import org.example.application.DomainEventPublisher;
 import org.example.domain.order.OrderBookedEvent;
@@ -34,14 +34,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
-  @Mock
-  DomainEventPublisher domainEventPublisher;
-  @Mock
-  PaymentRepository paymentRepository;
-  @Mock
-  RoomRepository roomRepository;
-  @InjectMocks
-  PaymentService paymentService;
+  @Mock DomainEventPublisher domainEventPublisher;
+  @Mock PaymentRepository paymentRepository;
+  @Mock RoomRepository roomRepository;
+  @InjectMocks PaymentService paymentService;
 
   @Test
   void payForBooking() {
@@ -69,9 +65,10 @@ class PaymentServiceTest {
 
     when(paymentRepository.findAllById(any())).thenReturn(Arrays.asList(payment1, payment2));
     final CheckInPaymentReq req = new CheckInPaymentReq();
-    req.setPaymentIds(Arrays.asList(
-       new PaymentId(payment1.getId(), payment1.getSerialNumber()),
-       new PaymentId(payment2.getId(), payment2.getSerialNumber())));
+    req.setPaymentIds(
+        Arrays.asList(
+            new PaymentId(payment1.getId(), payment1.getSerialNumber()),
+            new PaymentId(payment2.getId(), payment2.getSerialNumber())));
     req.setPayMethod(PayMethod.WECHAT);
     req.setThirdPartySerialNumber("ThirdPartySerialNumber");
     // when
@@ -102,7 +99,7 @@ class PaymentServiceTest {
     when(roomRepository.findById(any())).thenReturn(Optional.of(mockRoom));
     when(mockRoom.getPrice()).thenReturn(100D);
     paymentService.listen(
-       new OrderBookedEvent(new OrderId(1L, "OrderNumber"), new RoomId(1L, "401")));
+        new OrderBookedEvent(new OrderId(1L, "OrderNumber"), new RoomId(1L, "401")));
     // 验证是否执行了1次saveAll方法, 保存时金额是20元\80\30元,分别是订金\尾款\押金
     verify(paymentRepository, times(1)).saveAll(any());
     ArgumentCaptor<List<Payment>> argument = ArgumentCaptor.forClass(List.class);

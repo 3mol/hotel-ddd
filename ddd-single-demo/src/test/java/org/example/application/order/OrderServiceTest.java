@@ -1,48 +1,35 @@
 package org.example.application.order;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import org.example.application.DomainEventPublisher;
-import org.example.application.payment.PaymentService;
-import org.example.domain.order.OrderCheckedInEvent;
-import org.example.domain.order.OrderCheckedOutEvent;
-import org.example.domain.order.RoomId;
-import java.util.Date;
-
-import java.util.Optional;
-import org.example.domain.order.Order;
-import org.example.domain.order.OrderId;
-import com.google.common.collect.Lists;
-
-import javax.annotation.Resource;
-import org.example.adapter.controller.BaseControllerTest;
-import org.example.domain.order.OrderRepository;
-import org.example.domain.order.OrderStatus;
-import org.example.domain.payment.Payment;
-import org.example.domain.payment.PaymentRepository;
-import org.example.domain.user.Customer;
-import org.junit.Assert;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Optional;
+import org.example.application.DomainEventPublisher;
+import org.example.application.payment.PaymentService;
+import org.example.domain.order.Order;
+import org.example.domain.order.OrderCheckedInEvent;
+import org.example.domain.order.OrderCheckedOutEvent;
+import org.example.domain.order.OrderId;
+import org.example.domain.order.OrderRepository;
+import org.example.domain.order.OrderStatus;
+import org.example.domain.order.RoomId;
+import org.example.domain.user.Customer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
-  @Mock
-  OrderRepository orderRepository;
-  @Mock
-  PaymentService paymentService;
-  @InjectMocks
-  OrderService orderService;
-  @Mock
-  DomainEventPublisher domainEventPublisher;
+  @Mock OrderRepository orderRepository;
+  @Mock PaymentService paymentService;
+  @InjectMocks OrderService orderService;
+  @Mock DomainEventPublisher domainEventPublisher;
 
   @Test
   void checkIn() {

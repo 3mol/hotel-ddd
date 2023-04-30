@@ -11,8 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DomainEventPublisher {
-  @Resource
-  private ApplicationEventPublisher applicationEventPublisher;
+  @Resource private ApplicationEventPublisher applicationEventPublisher;
 
   public void publish(PaymentReceivedEvent event) {
     applicationEventPublisher.publishEvent(event);
