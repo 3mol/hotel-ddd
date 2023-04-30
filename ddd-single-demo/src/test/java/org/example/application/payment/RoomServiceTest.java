@@ -1,6 +1,7 @@
 package org.example.application.payment;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import org.example.application.DomainEventPublisher;
 import org.example.application.room.ActiveRoomCardReq;
 import org.example.application.room.AppendRoomReq;
+import org.example.application.room.OpenDoorReq;
 import org.example.application.room.RoomService;
 import org.example.domain.order.Discount;
 import org.example.domain.order.RoomId;
@@ -63,5 +65,24 @@ class RoomServiceTest {
     final RoomCard roomCard = roomService.activeRoomCard(activeRoomCardReq);
     // then
     assertNotNull(roomCard.getKey());
+  }
+
+  @Test
+  void openRoomDoor() {
+    // given
+    final Room room = new Room(1L, RoomType.SINGLE, RoomStatus.CHECKED_IN, 100, "401");
+    room.setStatus(RoomStatus.CHECKED_IN);
+    room.getRoomDoor().getRoomLock().setKey("1234567890");
+    when(roomRepository.findById(any())).thenReturn(Optional.of(room));
+    final ActiveRoomCardReq activeRoomCardReq = new ActiveRoomCardReq();
+    activeRoomCardReq.setRoomId(new RoomId(1L, "401"));
+    // when
+    final OpenDoorReq openDoorReq = new OpenDoorReq();
+    openDoorReq.setRoomCard(new RoomCard("1234567890"));
+    openDoorReq.setRoomId(new RoomId(1L, "401"));
+
+    boolean open = roomService.openDoor(openDoorReq);
+    // then
+    assertTrue(open);
   }
 }

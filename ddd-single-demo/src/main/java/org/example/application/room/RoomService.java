@@ -55,4 +55,10 @@ public class RoomService extends BaseService {
     roomRepository.save(room);
     return new RoomCard(newKey);
   }
+
+  public boolean openDoor(OpenDoorReq openDoorReq) {
+    final Long id = openDoorReq.getRoomId().getId();
+    final Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("房间不存在！"));
+    return room.open(openDoorReq.getRoomCard());
+  }
 }

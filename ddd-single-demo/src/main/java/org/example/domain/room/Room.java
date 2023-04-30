@@ -56,13 +56,15 @@ public class Room {
 
   public Room() {}
 
-  public void open(RoomCard roomCard) {
+  public boolean open(RoomCard roomCard) {
     if (roomCard == null) {
       throw new RuntimeException("房卡不能为空");
     }
     if (roomCard.getKey().equals(this.getRoomDoor().getRoomLock().getKey())) {
       this.getRoomDoor().setRoomDoorStatus(RoomDoorStatus.OPEN);
+      return true;
     }
+    return false;
   }
 
   public boolean couldBeReserved() {
