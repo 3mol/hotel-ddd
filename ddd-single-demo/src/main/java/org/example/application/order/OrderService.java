@@ -1,11 +1,11 @@
 package org.example.application.order;
 
-import java.util.Date;
 import java.util.UUID;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.DomainEventPublisher;
 import org.example.application.payment.PaymentService;
+import org.example.application.room.RoomService;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.Order;
 import org.example.domain.order.OrderBookedEvent;
@@ -16,7 +16,6 @@ import org.example.domain.order.OrderRepository;
 import org.example.domain.order.OrderStatus;
 import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.room.Room;
-import org.example.domain.room.RoomRepository;
 import org.example.domain.room.RoomStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -28,13 +27,17 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class OrderService {
   @Resource OrderRepository orderRepository;
   @Resource BookingRepository bookingRepository;
-  @Resource RoomRepository roomRepository;
-
   @Resource DomainEventPublisher domainEventPublisher;
   @Resource PaymentService paymentService;
+  @Resource RoomService roomService;
 
   @Transactional
   public OrderResp booking(BookingReq bookingReq) {
+    final Room room = roomService.getById(bookingReq.getRoomId().getId());
+    if (!room.canBeReserved()) {
+      throw new RuntimeException("该房间暂时不可被预定！");
+    }
+
     final Order order = new Order();
     order.setId(null);
     order.setNumber(UUID.randomUUID().toString());
@@ -43,18 +46,17 @@ public class OrderService {
     //    order.setCustomers(Lists.newArrayList());
     order.setCheckInTime(null);
     order.setCheckOutTime(null);
+    orderRepository.save(order);
 
     final Booking booking = new Booking();
+    booking.setOrderId(new OrderId(order.getId(), order.getNumber()));
     booking.setRoomId(bookingReq.getRoomId());
     booking.setCustomer(bookingReq.getCustomer());
     booking.setPhone(bookingReq.getPhone());
     booking.setOrderedUserId(bookingReq.getUserId());
-    booking.setCheckInDate(new Date());
-
-    // todo 检查room是否已经可被预定
+    booking.setCheckInDate(bookingReq.getCheckInDate());
 
     // 持久化聚合
-    orderRepository.save(order);
     bookingRepository.save(booking);
 
     final OrderResp orderResp = new OrderResp();
@@ -121,10 +123,7 @@ public class OrderService {
     final Order order = orderRepository.findByNumber(orderNumber);
     if (order != null) {
       // 检查房间是否被预定
-      final Room room =
-          roomRepository
-              .findById(order.getRoomId().getId())
-              .orElseThrow(() -> new RuntimeException("房间不存在"));
+      final Room room = roomService.getById(order.getRoomId().getId());
       if (room.couldBeReserved()) {
         // todo 开启任务为预定失败的订单退款
         order.setStatus(OrderStatus.RESERVED_FAIL);
@@ -132,7 +131,7 @@ public class OrderService {
       } else {
         room.setStatus(RoomStatus.RESERVED);
         order.setStatus(OrderStatus.RESERVED);
-        roomRepository.save(room);
+        roomService.save(room);
         orderRepository.save(order);
       }
     }

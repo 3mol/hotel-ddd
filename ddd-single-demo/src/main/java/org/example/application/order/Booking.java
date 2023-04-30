@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Data;
+import org.example.domain.order.OrderId;
 import org.example.domain.order.RoomId;
 import org.example.domain.user.Customer;
 import org.example.domain.user.UserId;
@@ -22,6 +23,13 @@ public class Booking {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @AttributeOverrides({
+    @AttributeOverride(name = "id", column = @Column(name = "order_id")),
+    @AttributeOverride(name = "number", column = @Column(name = "order_number"))
+  })
+  @Embedded
+  private OrderId orderId;
 
   @AttributeOverrides({
     @AttributeOverride(name = "id", column = @Column(name = "room_id")),

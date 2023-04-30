@@ -4,10 +4,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
+import org.example.application.order.Booking;
+import org.example.domain.order.BookingRepository;
 import org.example.domain.order.OrderBookedEvent;
+import org.example.domain.order.OrderId;
+import org.example.domain.order.OrderRepository;
 import org.example.domain.order.PayStatus;
 import org.example.domain.order.PayType;
 import org.example.domain.order.RoomId;
@@ -27,14 +32,20 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class PaymentService extends BaseService {
   final PaymentRepository paymentRepository;
   final RoomRepository roomRepository;
+  @Resource OrderRepository orderRepository;
+  @Resource private BookingRepository bookingRepository;
 
   public PaymentService(
       DomainEventPublisher domainEventPublisher,
       PaymentRepository paymentRepository,
-      RoomRepository roomRepository) {
+      RoomRepository roomRepository,
+      OrderRepository orderRepository,
+      BookingRepository bookingRepository) {
     super(domainEventPublisher);
     this.paymentRepository = paymentRepository;
     this.roomRepository = roomRepository;
+    this.orderRepository = orderRepository;
+    this.bookingRepository = bookingRepository;
   }
 
   @Transactional
@@ -54,11 +65,28 @@ public class PaymentService extends BaseService {
     domainEventPublisher.publish(paymentReceivedEvent);
   }
 
-  private List<Payment> getPaymentsForBooked(OrderBookedEvent event, Room room) {
+  @Async
+  @TransactionalEventListener
+  public void listen(OrderBookedEvent event) {
+    log.info("handling event: {}", event);
+    final OrderId orderId = event.getOrderId();
+    final Booking booking = bookingRepository.findByOrderId(orderId);
+    final Date checkInTime = booking.getCheckInDate();
+    final RoomId roomId = event.getRoomId();
+    final Room room =
+        roomRepository.findById(roomId.getId()).orElseThrow(() -> new RuntimeException("房间不存在！"));
+    // 创建支付信息
+    final List<Payment> payments = getPaymentsForBooked(event, room, checkInTime);
+    paymentRepository.saveAll(payments);
+    log.info("handled event: {}", event);
+  }
+
+  private List<Payment> getPaymentsForBooked(OrderBookedEvent event, Room room, Date checkInTime) {
+    final double roomDiscountPrice = room.getDiscountPrice(checkInTime);
     // 尾款支付\押金支付
     return Arrays.asList(
-        buildUnpaid(PayType.DEPOSIT, event.getOrderId().getNumber(), room.getPrice() * 0.2),
-        buildUnpaid(PayType.FINAL_PAYMENT, event.getOrderId().getNumber(), room.getPrice() * 0.8),
+        buildUnpaid(PayType.DEPOSIT, event.getOrderId().getNumber(), roomDiscountPrice * 0.2),
+        buildUnpaid(PayType.FINAL_PAYMENT, event.getOrderId().getNumber(), roomDiscountPrice * 0.8),
         buildUnpaid(PayType.DEPOSIT_CHARGE, event.getOrderId().getNumber(), 30d));
   }
 
@@ -70,19 +98,6 @@ public class PaymentService extends BaseService {
     payment.setAmount(amount);
     payment.setCreatedAt(new Date());
     return payment;
-  }
-
-  @Async
-  @TransactionalEventListener
-  public void listen(OrderBookedEvent event) {
-    log.info("handling event: {}", event);
-    final RoomId roomId = event.getRoomId();
-    final Room room =
-        roomRepository.findById(roomId.getId()).orElseThrow(() -> new RuntimeException("房间不存在！"));
-    // 创建支付信息
-    final List<Payment> payments = getPaymentsForBooked(event, room);
-    paymentRepository.saveAll(payments);
-    log.info("handled event: {}", event);
   }
 
   /**

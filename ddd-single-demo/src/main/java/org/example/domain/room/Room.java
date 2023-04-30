@@ -1,5 +1,8 @@
 package org.example.domain.room;
 
+import com.google.common.collect.Range;
+import java.util.Calendar;
+import java.util.Date;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
@@ -77,5 +80,28 @@ public class Room {
 
   public boolean couldBeReserved() {
     return getStatus() != RoomStatus.FREE;
+  }
+
+  public double getDiscountPrice(Date checkInTime) {
+    return getPrice() * getDiscount(checkInTime);
+  }
+
+  private static double getDiscount(Date checkInTime) {
+    final int dayOfWeek = getDayOfWeek(checkInTime);
+    if (Range.closed(Calendar.MONDAY, Calendar.FRIDAY).contains(dayOfWeek)) {
+      return 0.5;
+    } else {
+      return 1;
+    }
+  }
+
+  private static int getDayOfWeek(Date checkInTime) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(checkInTime);
+    return calendar.get(Calendar.DAY_OF_WEEK);
+  }
+
+  public boolean canBeReserved() {
+    return status == RoomStatus.FREE;
   }
 }

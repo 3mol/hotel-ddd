@@ -88,4 +88,12 @@ public class RoomService extends BaseService {
     roomRepository.save(room);
     log.info("房间状态更新成功！{}", RoomStatus.CHECKED_IN);
   }
+
+  public void save(Room room) {
+    roomRepository.save(room);
+  }
+
+  public Room getById(Long id) {
+    return roomRepository.findById(id).orElseThrow(() -> new RuntimeException("房间不存在"));
+  }
 }

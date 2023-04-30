@@ -4,13 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Date;
+import cn.hutool.core.date.DateUtil;
 import java.util.List;
 import javax.annotation.Resource;
 import lombok.SneakyThrows;
 import org.example.application.order.BookingReq;
 import org.example.application.order.OrderResp;
 import org.example.application.room.AppendRoomReq;
+import org.example.application.room.RoomResp;
 import org.example.application.room.RoomService;
 import org.example.domain.order.PayStatus;
 import org.example.domain.order.RoomId;
@@ -27,6 +28,7 @@ import org.springframework.test.web.servlet.MvcResult;
 class OrderControllerTest extends BaseControllerTest {
   @Resource PaymentRepository paymentRepository;
   @Resource RoomService roomService;
+  private RoomResp roomResp;
 
   @BeforeEach
   void setUp() {
@@ -35,7 +37,7 @@ class OrderControllerTest extends BaseControllerTest {
     appendRoomReq.setType(RoomType.SINGLE);
     appendRoomReq.setPrice(100.0D);
     appendRoomReq.setNumber("401");
-    roomService.appendRoom(appendRoomReq);
+    roomResp = roomService.appendRoom(appendRoomReq);
   }
 
   @Test
@@ -52,7 +54,8 @@ class OrderControllerTest extends BaseControllerTest {
     customer.setIdCard("88888888");
     bookingReq.setCustomer(customer);
     bookingReq.setPhone("10086");
-    bookingReq.setCheckInDate(new Date());
+    // 预定周五
+    bookingReq.setCheckInDate(DateUtil.parseDate("2023-04-28"));
     bookingReq.setUserId(new UserId(1L, "王二"));
     final String content = objectMapper.writeValueAsString(bookingReq);
     MvcResult result =
@@ -71,6 +74,8 @@ class OrderControllerTest extends BaseControllerTest {
     // 事件会产生支付信息，20元的待支付信息
     final List<Payment> payments = paymentRepository.findAllBySerialNumber(resp.getNumber());
     assertEquals(PayStatus.UNPAID, payments.get(0).getStatus());
-    assertEquals(20, payments.get(0).getAmount());
+    // 100 为原价，周五打五折，收20%的订金 => 10元
+    final double expected = 100 * 0.5 * 0.2;
+    assertEquals(expected, payments.get(0).getAmount());
   }
 }
