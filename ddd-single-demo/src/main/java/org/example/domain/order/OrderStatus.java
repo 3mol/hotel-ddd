@@ -8,7 +8,7 @@ public enum OrderStatus {
   /** 付订金后，房间被预约，导致预定失败，订金等待退回 */
   RESERVED_FAIL,
   /** 已入住 */
-  CHECKED,
+  CHECKED_IN,
   /** 已退房 */
   CHECKED_OUT,
   /** 已取消 */

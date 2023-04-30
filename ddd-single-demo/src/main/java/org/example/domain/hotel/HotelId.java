@@ -1,13 +1,15 @@
-package org.example.application.room;
+package org.example.domain.hotel;
 
+import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomResp {
+public class HotelId {
   private Long id;
-  private String number;
+  private String name;
 }

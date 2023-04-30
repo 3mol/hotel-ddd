@@ -58,7 +58,7 @@ class OrderServiceTest {
     req.setCustomer(customer);
     req.setPhone("10086");
     final OrderResp resp = orderService.checkIn(req);
-    assertEquals(OrderStatus.CHECKED, resp.getStatus());
+    assertEquals(OrderStatus.CHECKED_IN, resp.getStatus());
     verify(domainEventPublisher).publish(any(OrderCheckedInEvent.class));
   }
 

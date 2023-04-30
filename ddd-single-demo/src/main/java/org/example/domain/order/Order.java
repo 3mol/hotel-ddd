@@ -42,7 +42,7 @@ public class Order {
   private Date checkOutTime; // 退房时间;
 
   public void checkIn(List<Customer> customers, String phone) {
-    this.status = OrderStatus.CHECKED;
+    this.status = OrderStatus.CHECKED_IN;
     this.checkInTime = new Date();
     this.phoneOnCheckedIn = phone;
     customers.forEach(this::addCustomer);

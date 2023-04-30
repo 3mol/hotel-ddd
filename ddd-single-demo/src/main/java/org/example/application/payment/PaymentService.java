@@ -112,10 +112,16 @@ public class PaymentService extends BaseService {
   }
 
   public boolean hasUnpaidPayment(String number) {
-    final List<Payment> payments = paymentRepository.listBySerialNumber(number);
+    final List<Payment> payments = paymentRepository.findAllBySerialNumber(number);
     if (payments.isEmpty()) {
       throw new RuntimeException("支付信息不存在！");
     }
     return payments.stream().anyMatch(i -> i.getStatus() == PayStatus.UNPAID);
+  }
+
+  public List<Payment> findAllUnpaidPayment(String number) {
+    return paymentRepository.findAllBySerialNumber(number).stream()
+        .filter(i -> i.getStatus() == PayStatus.UNPAID)
+        .collect(Collectors.toList());
   }
 }

@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import lombok.Data;
+import org.example.domain.hotel.HotelId;
 import org.example.domain.order.Discount;
 import org.example.domain.order.OrderId;
 
@@ -17,6 +18,13 @@ public class Room {
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
   private Long id;
+
+  @AttributeOverrides({
+    @AttributeOverride(name = "id", column = @Column(name = "hotel_id")),
+    @AttributeOverride(name = "name", column = @Column(name = "hotel_name"))
+  })
+  @Embedded
+  private HotelId hotelId;
 
   @AttributeOverrides({
     @AttributeOverride(name = "id", column = @Column(name = "order_id")),

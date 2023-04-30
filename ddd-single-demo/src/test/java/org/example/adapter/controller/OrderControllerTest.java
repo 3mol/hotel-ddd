@@ -69,7 +69,7 @@ class OrderControllerTest extends BaseControllerTest {
 
     Thread.sleep(200);
     // 事件会产生支付信息，20元的待支付信息
-    final List<Payment> payments = paymentRepository.listBySerialNumber(resp.getNumber());
+    final List<Payment> payments = paymentRepository.findAllBySerialNumber(resp.getNumber());
     assertEquals(PayStatus.UNPAID, payments.get(0).getStatus());
     assertEquals(20, payments.get(0).getAmount());
   }
