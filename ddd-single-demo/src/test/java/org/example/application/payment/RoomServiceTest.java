@@ -1,15 +1,23 @@
 package org.example.application.payment;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import org.example.application.DomainEventPublisher;
+import org.example.application.room.ActiveRoomCardReq;
 import org.example.application.room.AppendRoomReq;
 import org.example.application.room.RoomService;
 import org.example.domain.order.Discount;
+import org.example.domain.order.RoomId;
+import org.example.domain.room.Room;
 import org.example.domain.room.RoomAppendedEvent;
+import org.example.domain.room.RoomCard;
 import org.example.domain.room.RoomRepository;
+import org.example.domain.room.RoomStatus;
 import org.example.domain.room.RoomType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +32,7 @@ class RoomServiceTest {
   @InjectMocks RoomService roomService;
 
   @Test
-  void payForBooking() {
+  void appendRoom() {
     // given
 
     // when
@@ -40,5 +48,20 @@ class RoomServiceTest {
     roomService.appendRoom(appendRoomReq);
     // then
     verify(domainEventPublisher, times(1)).publish(any(RoomAppendedEvent.class));
+  }
+
+  @Test
+  void activeRoomCard() {
+    // given
+    final Room room = new Room(1L, RoomType.SINGLE, RoomStatus.CHECKED_IN, 100, "401");
+    room.setStatus(RoomStatus.CHECKED_IN);
+
+    when(roomRepository.findById(any())).thenReturn(Optional.of(room));
+    final ActiveRoomCardReq activeRoomCardReq = new ActiveRoomCardReq();
+    activeRoomCardReq.setRoomId(new RoomId(1L, "401"));
+    // when
+    final RoomCard roomCard = roomService.activeRoomCard(activeRoomCardReq);
+    // then
+    assertNotNull(roomCard.getKey());
   }
 }
