@@ -1,5 +1,6 @@
 package org.example.application.payment;
 
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -32,10 +33,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
-  @Mock DomainEventPublisher domainEventPublisher;
-  @Mock PaymentRepository paymentRepository;
-  @Mock RoomRepository roomRepository;
-  @InjectMocks PaymentService paymentService;
+  @Mock
+  DomainEventPublisher domainEventPublisher;
+  @Mock
+  PaymentRepository paymentRepository;
+  @Mock
+  RoomRepository roomRepository;
+  @InjectMocks
+  PaymentService paymentService;
 
   @Test
   void payForBooking() {
@@ -73,11 +78,13 @@ class PaymentServiceTest {
     when(roomRepository.findById(any())).thenReturn(Optional.of(mockRoom));
     when(mockRoom.getPrice()).thenReturn(100D);
     paymentService.listen(
-        new OrderBookedEvent(new OrderId(1L, "OrderNumber"), new RoomId(1L, "401")));
-    // 验证是否执行了1次save方法, 保存时金额是20元
-    verify(paymentRepository, times(1)).save(any());
-    ArgumentCaptor<Payment> argument = ArgumentCaptor.forClass(Payment.class);
-    verify(paymentRepository).save(argument.capture());
-    assertEquals(20, argument.getValue().getAmount());
+       new OrderBookedEvent(new OrderId(1L, "OrderNumber"), new RoomId(1L, "401")));
+    // 验证是否执行了1次saveAll方法, 保存时金额是20元\80\30元,分别是订金\尾款\押金
+    verify(paymentRepository, times(1)).saveAll(any());
+    ArgumentCaptor<List<Payment>> argument = ArgumentCaptor.forClass(List.class);
+    verify(paymentRepository).saveAll(argument.capture());
+    assertEquals(20, argument.getValue().get(0).getAmount());
+    assertEquals(80, argument.getValue().get(1).getAmount());
+    assertEquals(30, argument.getValue().get(2).getAmount());
   }
 }

@@ -1,6 +1,8 @@
 package org.example.application.payment;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
@@ -25,9 +27,9 @@ public class PaymentService extends BaseService {
   final RoomRepository roomRepository;
 
   public PaymentService(
-      DomainEventPublisher domainEventPublisher,
-      PaymentRepository paymentRepository,
-      RoomRepository roomRepository) {
+     DomainEventPublisher domainEventPublisher,
+     PaymentRepository paymentRepository,
+     RoomRepository roomRepository) {
     super(domainEventPublisher);
     this.paymentRepository = paymentRepository;
     this.roomRepository = roomRepository;
@@ -36,18 +38,37 @@ public class PaymentService extends BaseService {
   @Transactional
   public void payForBooking(BookingPaymentReq req) {
     Payment payment =
-        paymentRepository
-            .findById(req.getPaymentId().getId())
-            .orElseThrow(() -> new RuntimeException("支付信息不存在！"));
+       paymentRepository
+          .findById(req.getPaymentId().getId())
+          .orElseThrow(() -> new RuntimeException("支付信息不存在！"));
     if (payment.getStatus().equals(PayStatus.PAID)) {
       throw new RuntimeException("该订单已经支付！");
     }
     // todo 校验第三方支付平台，是否存在该流水是否已经支付
     final PaymentReceivedEvent paymentReceivedEvent =
-        payment.receivePay(req.getPayMethod(), req.getThirdPartySerialNumber());
+       payment.receivePay(req.getPayMethod(), req.getThirdPartySerialNumber());
     paymentRepository.save(payment);
     // todo 发送支付成功事件
     domainEventPublisher.publish(paymentReceivedEvent);
+  }
+
+  private List<Payment> getPaymentsForBooked(OrderBookedEvent event, Room room) {
+    // 尾款支付\押金支付
+    return Arrays.asList(
+       buildUnpaid(PayType.DEPOSIT, event.getOrderId().getNumber(), room.getPrice() * 0.2),
+       buildUnpaid(PayType.FINAL_PAYMENT, event.getOrderId().getNumber(), room.getPrice() * 0.8),
+       buildUnpaid(PayType.DEPOSIT_CHARGE, event.getOrderId().getNumber(), 30d)
+    );
+  }
+
+  private Payment buildUnpaid(PayType payType, String serialNumber, Double amount) {
+    final Payment payment = new Payment();
+    payment.setSerialNumber(serialNumber);
+    payment.setType(payType);
+    payment.setStatus(PayStatus.UNPAID);
+    payment.setAmount(amount);
+    payment.setCreatedAt(new Date());
+    return payment;
   }
 
   @Async
@@ -56,17 +77,11 @@ public class PaymentService extends BaseService {
     log.info("handling event: {}", event);
     final RoomId roomId = event.getRoomId();
     final Room room =
-        roomRepository.findById(roomId.getId()).orElseThrow(() -> new RuntimeException("房间不存在！"));
+       roomRepository.findById(roomId.getId()).orElseThrow(() -> new RuntimeException("房间不存在！"));
     // 创建支付信息
-    final Payment payment = new Payment();
-    payment.setMethod(null);
-    payment.setSerialNumber(event.getOrderId().getNumber());
-    payment.setType(PayType.DEPOSIT);
-    payment.setStatus(PayStatus.UNPAID);
-    payment.setAmount(room.getPrice() * 0.2);
-    payment.setCreatedAt(new Date());
-    payment.setPaidAt(new Date());
-    paymentRepository.save(payment);
+    final List<Payment> payments = getPaymentsForBooked(event, room);
+    paymentRepository.saveAll(payments);
     log.info("handled event: {}", event);
   }
+
 }
