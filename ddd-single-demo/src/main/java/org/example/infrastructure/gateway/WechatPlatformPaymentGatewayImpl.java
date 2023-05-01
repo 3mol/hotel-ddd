@@ -31,4 +31,9 @@ public class WechatPlatformPaymentGatewayImpl
   public PayStatus getPaymentStatusFromPlatform(String thirdPartySerialNumber) {
     return PayStatus.PAID;
   }
+
+  @Override
+  public void requestRefundPayment(String thirdPartySerialNumber, Double amount) {
+    // pass
+  }
 }

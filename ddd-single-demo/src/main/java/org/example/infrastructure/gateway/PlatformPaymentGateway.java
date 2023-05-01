@@ -10,4 +10,6 @@ public interface PlatformPaymentGateway<REFUNDED_REQ, PAYMENT> {
   void receiveRefundedPayment(REFUNDED_REQ payment);
 
   PayStatus getPaymentStatusFromPlatform(String thirdPartySerialNumber);
+
+  void requestRefundPayment(String thirdPartySerialNumber, Double amount);
 }

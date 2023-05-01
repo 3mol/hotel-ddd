@@ -1,5 +1,7 @@
 package org.example.domain.payment;
 
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,8 +37,18 @@ public class Payment {
   }
 
   /** 取消时，未支付的订单直接进入取消状态，已支付的订单将进入退款中状态 */
-  public void cancel() {
+  public void cancel(Date currentDate, Date expectCheckInDate) {
     final boolean unpaid = this.status == PayStatus.UNPAID;
-    this.status = unpaid ? PayStatus.CANCELLED : PayStatus.REFUNDING;
+    if (unpaid) {
+      this.status = PayStatus.CANCELLED;
+      return;
+    }
+    // 入住前24小时内取消订单，不会退回订金
+    final long between = DateUtil.between(expectCheckInDate, currentDate, DateUnit.HOUR);
+    if (between > 24) {
+      this.status = PayStatus.REFUNDING;
+    } else {
+      this.status = PayStatus.CANCELLED;
+    }
   }
 }

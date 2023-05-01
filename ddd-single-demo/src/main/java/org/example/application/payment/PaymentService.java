@@ -1,5 +1,6 @@
 package org.example.application.payment;
 
+import cn.hutool.core.lang.Assert;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
 import org.example.application.order.Booking;
+import org.example.common.CurrentDate;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.OrderBookedEvent;
 import org.example.domain.order.OrderCancelledEvent;
@@ -39,6 +41,7 @@ public class PaymentService extends BaseService {
   final OrderRepository orderRepository;
   final BookingRepository bookingRepository;
   final PlatformPaymentGatewayFactory platformPaymentGatewayFactory;
+  final CurrentDate currentDate;
 
   public PaymentService(
       DomainEventPublisher domainEventPublisher,
@@ -46,13 +49,15 @@ public class PaymentService extends BaseService {
       RoomRepository roomRepository,
       OrderRepository orderRepository,
       BookingRepository bookingRepository,
-      PlatformPaymentGatewayFactory platformPaymentGatewayFactory) {
+      PlatformPaymentGatewayFactory platformPaymentGatewayFactory,
+      CurrentDate currentDate) {
     super(domainEventPublisher);
     this.paymentRepository = paymentRepository;
     this.roomRepository = roomRepository;
     this.orderRepository = orderRepository;
     this.bookingRepository = bookingRepository;
     this.platformPaymentGatewayFactory = platformPaymentGatewayFactory;
+    this.currentDate = currentDate;
   }
 
   @Transactional
@@ -99,31 +104,6 @@ public class PaymentService extends BaseService {
     log.info("handled event: {}", event);
   }
 
-  @EventListener
-  @Transactional
-  public void listener(OrderCancelledEvent event) {
-    // 订单取消事件，房间释放
-    log.info("OrderCancelledEvent:{}", event);
-    final List<Payment> payments =
-        paymentRepository.findAllBySerialNumber(event.getOrderId().getNumber());
-    payments.forEach(Payment::cancel);
-    // todo 调用接口进行退款
-    log.info("OrderCancelledEvent done！");
-  }
-
-  @EventListener
-  @Transactional
-  public void listener(PaymentRefundedEvent event) {
-    // 第三方平台退款成功事件，修改支付状态
-    log.info("PaymentRefundedEvent:{}", event);
-    final List<Payment> payments =
-        paymentRepository.findAllBySerialNumber(event.getThirdPartySerialNumber());
-    payments.stream()
-        .filter(i -> i.getStatus() == PayStatus.REFUNDING)
-        .forEach(i -> i.setStatus(PayStatus.REFUNDED));
-    log.info("PaymentRefundedEvent done！");
-  }
-
   private List<Payment> getPaymentsForBooked(OrderBookedEvent event, Room room, Date checkInTime) {
     final double roomDiscountPrice = room.getDiscountPrice(checkInTime);
     // 尾款支付\押金支付
@@ -141,6 +121,60 @@ public class PaymentService extends BaseService {
     payment.setAmount(amount);
     payment.setCreatedAt(new Date());
     return payment;
+  }
+
+  @EventListener
+  @Transactional
+  public void listen(OrderCancelledEvent event) {
+    // 订单取消事件，房间释放
+    log.info("OrderCancelledEvent:{}", event);
+    final List<Payment> payments =
+        paymentRepository.findAllBySerialNumber(event.getOrderId().getNumber());
+    final Booking bookingInfo = bookingRepository.findByOrderId(event.getOrderId());
+    final Date checkInDate = bookingInfo.getCheckInDate();
+    // 退回所有订金
+    payments.forEach(i -> i.cancel(currentDate.get(), checkInDate));
+    // 查询需要退款的Payment
+    final Payment refundingPayment = findRefundingPayment(payments);
+    refundPaymentToCustomer(refundingPayment);
+    log.info("OrderCancelledEvent done！");
+  }
+
+  private void refundPaymentToCustomer(Payment refundingPayment) {
+    if (refundingPayment == null) {
+      return;
+    }
+    final String thirdPartySerialNumber = refundingPayment.getThirdPartySerialNumber();
+    // BAD IMPL: Using proxy object.
+    platformPaymentGatewayFactory
+        .create(PayMethod.WECHAT)
+        .requestRefundPayment(thirdPartySerialNumber, refundingPayment.getAmount());
+  }
+
+  private Payment findRefundingPayment(List<Payment> payments) {
+    final List<Payment> refundingPayments =
+        payments.stream()
+            .filter(i -> i.getStatus() == PayStatus.REFUNDING)
+            .collect(Collectors.toList());
+    if (refundingPayments.isEmpty()) {
+      return null;
+    }
+    // 一定是只有一个订金是处于 退款中 的状态
+    Assert.isTrue(refundingPayments.size() == 1);
+    return refundingPayments.get(0);
+  }
+
+  @EventListener
+  @Transactional
+  public void listen(PaymentRefundedEvent event) {
+    // 第三方平台退款成功事件，修改支付状态
+    log.info("PaymentRefundedEvent:{}", event);
+    final List<Payment> payments =
+        paymentRepository.findAllBySerialNumber(event.getThirdPartySerialNumber());
+    payments.stream()
+        .filter(i -> i.getStatus() == PayStatus.REFUNDING)
+        .forEach(i -> i.setStatus(PayStatus.REFUNDED));
+    log.info("PaymentRefundedEvent done！");
   }
 
   /**

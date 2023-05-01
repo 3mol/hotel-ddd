@@ -2,7 +2,7 @@ package org.example.application.payment;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.Optional;
 import org.example.application.DomainEventPublisher;
 import org.example.application.order.Booking;
+import org.example.common.CurrentDate;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.OrderBookedEvent;
+import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderId;
 import org.example.domain.order.PayMethod;
 import org.example.domain.order.PayStatus;
@@ -29,7 +31,6 @@ import org.example.domain.room.Room;
 import org.example.domain.room.RoomRepository;
 import org.example.infrastructure.gateway.PlatformPaymentGateway;
 import org.example.infrastructure.gateway.PlatformPaymentGatewayFactory;
-import org.example.infrastructure.gateway.WechatPlatformPaymentGatewayImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,18 +48,19 @@ class PaymentServiceTest {
   @Mock BookingRepository bookingRepository;
   @Mock PlatformPaymentGatewayFactory platformPaymentGatewayFactory;
   @InjectMocks PaymentService paymentService;
+  @Mock CurrentDate currentDate;
+  @Mock PlatformPaymentGateway wechatPlatformPaymentGateway;
 
   @Test
+  @DisplayName("预定后支付订金")
   void payForBooking() {
     // given
-    final Payment payment = getPayment();
-    when(paymentRepository.findById(any())).thenReturn(Optional.of(payment));
-    final PlatformPaymentGateway wechatPlatformPaymentGateway =
-        mock(WechatPlatformPaymentGatewayImpl.class);
-    when(wechatPlatformPaymentGateway.getPaymentStatusFromPlatform(any()))
-        .thenReturn(PayStatus.PAID);
     when(platformPaymentGatewayFactory.create(PayMethod.WECHAT))
         .thenReturn(wechatPlatformPaymentGateway);
+    final Payment payment = getPayment();
+    when(wechatPlatformPaymentGateway.getPaymentStatusFromPlatform(any()))
+        .thenReturn(PayStatus.PAID);
+    when(paymentRepository.findById(any())).thenReturn(Optional.of(payment));
     final BookingPaymentReq req = new BookingPaymentReq();
     req.setPaymentId(new PaymentId(payment.getId(), payment.getSerialNumber()));
     req.setPayMethod(PayMethod.WECHAT);
@@ -71,6 +73,7 @@ class PaymentServiceTest {
   }
 
   @Test
+  @DisplayName("入住前支付尾款")
   void payForCheckIn() {
     // given
     final Payment payment1 = getPayment();
@@ -150,5 +153,57 @@ class PaymentServiceTest {
     assertEquals(100 * 0.5 * 0.2, argument.getValue().get(0).getAmount());
     assertEquals(100 * 0.5 * 0.8, argument.getValue().get(1).getAmount());
     assertEquals(30, argument.getValue().get(2).getAmount());
+  }
+
+  @Test
+  @DisplayName("预定并且支付成功后，在24小时之前退款，退款成功")
+  void listenOrderCancelledEvent1() {
+    when(platformPaymentGatewayFactory.create(PayMethod.WECHAT))
+        .thenReturn(wechatPlatformPaymentGateway);
+    final Payment payment = new Payment();
+    payment.setId(1L);
+    payment.setMethod(null);
+    payment.setSerialNumber("OrderNumber");
+    payment.setThirdPartySerialNumber("ThirdPartySerialNumber");
+    payment.setType(PayType.DEPOSIT);
+    payment.setStatus(PayStatus.PAID);
+    payment.setAmount(10.0D);
+    payment.setCreatedAt(DateUtil.parseDate("2023-05-01"));
+    payment.setPaidAt(DateUtil.parseDate("2023-05-01"));
+    final Booking booking = new Booking();
+    booking.setCheckInDate(DateUtil.parseDate("2023-05-03"));
+    when(currentDate.get()).thenReturn(DateUtil.parseDate("2023-05-01"));
+    when(bookingRepository.findByOrderId(any())).thenReturn(booking);
+    when(paymentRepository.findAllBySerialNumber(any())).thenReturn(List.of(payment));
+    final OrderId orderNumber = new OrderId(1L, "OrderNumber");
+    final RoomId roomId = new RoomId(1L, "401");
+    paymentService.listen(new OrderCancelledEvent(orderNumber, roomId));
+    verify(platformPaymentGatewayFactory, times(1)).create(any());
+    verify(wechatPlatformPaymentGateway, times(1))
+        .requestRefundPayment(any(String.class), any(Double.class));
+  }
+
+  @Test
+  @DisplayName("预定并且支付成功后，在24小时之内退款，不会进行退款")
+  void listenOrderCancelledEvent2() {
+    when(currentDate.get()).thenReturn(DateUtil.parseDate("2023-05-01"));
+    final Payment payment = new Payment();
+    payment.setId(1L);
+    payment.setMethod(null);
+    payment.setSerialNumber("OrderNumber");
+    payment.setThirdPartySerialNumber("ThirdPartySerialNumber");
+    payment.setType(PayType.DEPOSIT);
+    payment.setStatus(PayStatus.PAID);
+    payment.setAmount(10.0D);
+    payment.setCreatedAt(DateUtil.parseDate("2023-05-01"));
+    payment.setPaidAt(DateUtil.parseDate("2023-05-01"));
+    final Booking booking = new Booking();
+    booking.setCheckInDate(DateUtil.parseDate("2023-05-02"));
+    when(bookingRepository.findByOrderId(any())).thenReturn(booking);
+    when(paymentRepository.findAllBySerialNumber(any())).thenReturn(List.of(payment));
+    final OrderId orderNumber = new OrderId(1L, "OrderNumber");
+    final RoomId roomId = new RoomId(1L, "401");
+    paymentService.listen(new OrderCancelledEvent(orderNumber, roomId));
+    verify(platformPaymentGatewayFactory, never()).create(any());
   }
 }
