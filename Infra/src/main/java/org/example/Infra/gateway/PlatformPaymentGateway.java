@@ -1,6 +1,5 @@
 package org.example.Infra.gateway;
 
-import org.example.domain.order.PayStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -9,7 +8,7 @@ public interface PlatformPaymentGateway<REFUNDED_REQ, PAYMENT> {
 
   void receiveRefundedPayment(REFUNDED_REQ payment);
 
-  PayStatus getPaymentStatusFromPlatform(String thirdPartySerialNumber);
+  String getPaymentStatusFromPlatform(String thirdPartySerialNumber);
 
   void requestRefundPayment(String thirdPartySerialNumber, Double amount);
 }

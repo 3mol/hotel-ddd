@@ -9,8 +9,12 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
-    <module>base-demo</module>
-    <module>ddd-single-demo</module>
+    <module>adapter</module>
+    <module>application</module>
+    <module>domain</module>
+    <module>Infra</module>
+    <module>common</module>
+    <module>client</module>
   </modules>
 
   <properties>

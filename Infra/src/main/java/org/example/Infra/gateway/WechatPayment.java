@@ -4,7 +4,6 @@ import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.domain.order.PayStatus;
 
 @Data
 @AllArgsConstructor
@@ -12,6 +11,6 @@ import org.example.domain.order.PayStatus;
 public class WechatPayment {
   private String serialNumber;
   private Double amount;
-  private PayStatus status;
+  private String status;
   private Date paidAt;
 }

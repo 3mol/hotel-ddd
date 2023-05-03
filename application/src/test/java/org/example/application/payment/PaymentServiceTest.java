@@ -1,5 +1,7 @@
 package org.example.application.payment;
 
+import org.example.common.CurrentDate;
+import org.example.domain.order.Booking;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -13,8 +15,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.example.application.DomainEventPublisher;
-import org.example.application.order.Booking;
-import org.example.common.CurrentDate;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.OrderBookedEvent;
 import org.example.domain.order.OrderCancelledEvent;
@@ -55,11 +55,11 @@ class PaymentServiceTest {
   @DisplayName("预定后支付订金")
   void payForBooking() {
     // given
-    when(platformPaymentGatewayFactory.create(PayMethod.WECHAT))
+    when(platformPaymentGatewayFactory.create(PayMethod.WECHAT.name()))
         .thenReturn(wechatPlatformPaymentGateway);
     final Payment payment = getPayment();
     when(wechatPlatformPaymentGateway.getPaymentStatusFromPlatform(any()))
-        .thenReturn(PayStatus.PAID);
+        .thenReturn(PayStatus.PAID.name());
     when(paymentRepository.findById(any())).thenReturn(Optional.of(payment));
     final BookingPaymentReq req = new BookingPaymentReq();
     req.setPaymentId(new PaymentId(payment.getId(), payment.getSerialNumber()));
@@ -158,7 +158,7 @@ class PaymentServiceTest {
   @Test
   @DisplayName("预定并且支付成功后，在24小时之前退款，退款成功")
   void listenOrderCancelledEvent1() {
-    when(platformPaymentGatewayFactory.create(PayMethod.WECHAT))
+    when(platformPaymentGatewayFactory.create(PayMethod.WECHAT.name()))
         .thenReturn(wechatPlatformPaymentGateway);
     final Payment payment = new Payment();
     payment.setId(1L);
