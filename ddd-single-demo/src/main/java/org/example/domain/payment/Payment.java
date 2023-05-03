@@ -48,7 +48,7 @@ public class Payment {
     if (between > 24) {
       this.status = PayStatus.REFUNDING;
     } else {
-      this.status = PayStatus.CANCELLED;
+      this.status = PayStatus.NO_REFUND;
     }
   }
 }

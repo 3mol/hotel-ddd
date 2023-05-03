@@ -55,6 +55,7 @@ public class Booking {
   })
   @Embedded
   private UserId orderedUserId;
+  private BookedStatus status;
 
   public void setOrderedUserId(UserId orderedUserId) {
     this.orderedUserId = orderedUserId;
