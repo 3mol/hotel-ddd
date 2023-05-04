@@ -34,3 +34,16 @@ Application 依赖Kafka、Spring-Boot等组件
 Adapter 依赖MVC组件
 Client 依赖Feign
 ```
+
+```plantuml
+namespace Adapter{}
+namespace Application{}
+namespace Domain{}
+namespace Client{}
+namespace Infra{}
+    Application --> Domain
+    Application --> Infra: 查询数据
+    Application -> Client: 对外的client包、remote接口
+    Adapter --> Application
+    Domain <.- Infra: 实现接口 
+```
