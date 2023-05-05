@@ -79,7 +79,7 @@ public class Room {
   }
 
   public boolean couldBeReserved() {
-    return getStatus() != RoomStatus.FREE;
+    return getStatus() == RoomStatus.FREE;
   }
 
   public double getDiscountPrice(Date checkInTime) {

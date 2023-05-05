@@ -1,27 +1,35 @@
 package org.example.application.room;
 
 import java.util.UUID;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.BaseService;
 import org.example.application.DomainEventPublisher;
 import org.example.domain.order.Discount;
+import org.example.domain.order.Order;
 import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderCheckedInEvent;
 import org.example.domain.order.OrderCheckedOutEvent;
+import org.example.domain.order.OrderRepository;
+import org.example.domain.order.OrderStatus;
 import org.example.domain.order.RoomId;
+import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.room.Room;
 import org.example.domain.room.RoomAppendedEvent;
 import org.example.domain.room.RoomCard;
 import org.example.domain.room.RoomRepository;
 import org.example.domain.room.RoomStatus;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Service
 public class RoomService extends BaseService {
   final RoomRepository roomRepository;
+  @Resource OrderRepository orderRepository;
 
   public RoomService(DomainEventPublisher domainEventPublisher, RoomRepository roomRepository) {
     super(domainEventPublisher);
@@ -103,11 +111,29 @@ public class RoomService extends BaseService {
     log.info("房间状态更新成功！{}", RoomStatus.CHECKED_IN);
   }
 
-  public void save(Room room) {
-    roomRepository.save(room);
+  @Async
+  @Transactional
+  @TransactionalEventListener
+  public void listen(PaymentReceivedEvent event) {
+    log.info("接受到支付被接受事件：{}", event);
+    final String orderNumber = event.getSerialNumber();
+    final Order order = orderRepository.findByNumber(orderNumber);
+    if (order != null) {
+      // 检查房间是否被预定
+      final Room room = getById(order.getRoomId().getId());
+      if (room.couldBeReserved()) {
+        room.setStatus(RoomStatus.RESERVED);
+        save(room);
+      }
+    }
+    log.info("支付被接受事件处理完成：{}", event);
   }
 
   public Room getById(Long id) {
     return roomRepository.findById(id).orElseThrow(() -> new RuntimeException("房间不存在"));
+  }
+
+  public void save(Room room) {
+    roomRepository.save(room);
   }
 }

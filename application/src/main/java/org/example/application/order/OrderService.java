@@ -134,13 +134,11 @@ public class OrderService {
       // 检查房间是否被预定
       final Room room = roomService.getById(order.getRoomId().getId());
       if (room.couldBeReserved()) {
-        // todo 开启任务为预定失败的订单退款
-        order.setStatus(OrderStatus.RESERVED_FAIL);
+        order.setStatus(OrderStatus.RESERVED);
         orderRepository.save(order);
       } else {
-        room.setStatus(RoomStatus.RESERVED);
-        order.setStatus(OrderStatus.RESERVED);
-        roomService.save(room);
+        // todo 开启任务为预定失败的订单退款
+        order.setStatus(OrderStatus.RESERVED_FAIL);
         orderRepository.save(order);
       }
     }
