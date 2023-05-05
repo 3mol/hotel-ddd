@@ -47,3 +47,18 @@ namespace Infra{}
     Adapter --> Application
     Domain <.- Infra: 实现接口 
 ```
+
+待办事务
+1. 微服务化
+   - order
+   - payment
+   - room
+   - hotel
+   - user
+   - report
+2. 分布式事件处理方案
+3. 分布式事务处理方案
+4. CQRS, 命令处理器、查询处理器、读写分离
+5. 聚合并发操作一致性问题处理方案
+6. 简易网关
+7. 简单的前端页面
