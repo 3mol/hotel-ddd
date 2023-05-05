@@ -20,9 +20,9 @@ public class BookedReport extends BaseReport {
 
   public void reduce(Booking booking) {
     totalCount++;
-    if (booking.getStatus()== BookedStatus.BOOKED) {
+    if (booking.getStatus() == BookedStatus.BOOKED) {
       successCount++;
-    } else if (booking.getStatus()== BookedStatus.CANCELLED){
+    } else if (booking.getStatus() == BookedStatus.CANCELLED) {
       cancelCount++;
     }
   }

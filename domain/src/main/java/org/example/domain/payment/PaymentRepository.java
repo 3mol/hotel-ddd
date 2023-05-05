@@ -11,5 +11,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
   List<Payment> findAllByThirdPartySerialNumber(String thirdPartySerialNumber);
 
-  List<Payment> findFirst1000ByCreatedAtBetweenAndIdGreaterThanEqualOrderByIdAsc(Date startCreatedAt, Date endCreatedAt, Long startId);
+  List<Payment> findFirst1000ByCreatedAtBetweenAndIdGreaterThanEqualOrderByIdAsc(
+      Date startCreatedAt, Date endCreatedAt, Long startId);
 }

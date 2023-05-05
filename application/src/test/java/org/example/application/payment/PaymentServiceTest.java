@@ -1,7 +1,5 @@
 package org.example.application.payment;
 
-import org.example.common.CurrentDate;
-import org.example.domain.order.Booking;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -14,7 +12,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import org.example.Infra.gateway.PlatformPaymentGateway;
+import org.example.Infra.gateway.PlatformPaymentGatewayFactory;
 import org.example.application.DomainEventPublisher;
+import org.example.common.CurrentDate;
+import org.example.domain.order.Booking;
 import org.example.domain.order.BookingRepository;
 import org.example.domain.order.OrderBookedEvent;
 import org.example.domain.order.OrderCancelledEvent;
@@ -29,8 +31,6 @@ import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.payment.PaymentRepository;
 import org.example.domain.room.Room;
 import org.example.domain.room.RoomRepository;
-import org.example.Infra.gateway.PlatformPaymentGateway;
-import org.example.Infra.gateway.PlatformPaymentGatewayFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

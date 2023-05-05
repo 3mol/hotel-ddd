@@ -54,6 +54,7 @@ public class ReportService {
 
   /**
    * todo 建立定时器周期触发统计过程
+   *
    * @param reportName ~
    * @param reportType ~
    * @param range ~
@@ -80,7 +81,7 @@ public class ReportService {
     recursion(
         (startId) ->
             paymentRepository.findFirst1000ByCreatedAtBetweenAndIdGreaterThanEqualOrderByIdAsc(
-                range.lowerEndpoint(), range.upperEndpoint(), startId ),
+                range.lowerEndpoint(), range.upperEndpoint(), startId),
         (list) -> list.forEach(paymentReport::reduce),
         Payment::getId);
     paymentReportRepository.save(paymentReport);

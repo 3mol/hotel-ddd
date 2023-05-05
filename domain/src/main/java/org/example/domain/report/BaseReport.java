@@ -8,8 +8,7 @@ import lombok.Data;
 @Data
 @Entity
 public abstract class BaseReport {
-  @Id
-  private Long id;
+  @Id private Long id;
   private ReportType type;
   private ReportName name;
   private Date startDate;

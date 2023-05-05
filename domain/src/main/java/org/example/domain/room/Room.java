@@ -12,8 +12,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import lombok.Data;
 import org.example.domain.hotel.HotelId;
-import org.example.domain.order.OrderId;
 import org.example.domain.order.Discount;
+import org.example.domain.order.OrderId;
 
 @Data
 @Entity

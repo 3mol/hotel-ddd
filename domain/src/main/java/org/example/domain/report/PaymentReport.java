@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.example.domain.order.PayStatus;
-import org.example.domain.payment.Payment;
 import org.example.domain.order.PayType;
+import org.example.domain.payment.Payment;
 
 @Data
 @Entity

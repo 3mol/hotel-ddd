@@ -11,8 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Data;
-import org.example.domain.order.OrderId;
-import org.example.domain.order.RoomId;
 import org.example.domain.user.Customer;
 import org.example.domain.user.UserId;
 
@@ -55,6 +53,7 @@ public class Booking {
   })
   @Embedded
   private UserId orderedUserId;
+
   private BookedStatus status;
 
   public void setOrderedUserId(UserId orderedUserId) {

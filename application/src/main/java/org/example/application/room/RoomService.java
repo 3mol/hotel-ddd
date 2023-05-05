@@ -11,7 +11,6 @@ import org.example.domain.order.OrderCancelledEvent;
 import org.example.domain.order.OrderCheckedInEvent;
 import org.example.domain.order.OrderCheckedOutEvent;
 import org.example.domain.order.OrderRepository;
-import org.example.domain.order.OrderStatus;
 import org.example.domain.order.RoomId;
 import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.room.Room;

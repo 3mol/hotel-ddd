@@ -18,7 +18,6 @@ import org.example.domain.order.OrderRepository;
 import org.example.domain.order.OrderStatus;
 import org.example.domain.payment.PaymentReceivedEvent;
 import org.example.domain.room.Room;
-import org.example.domain.room.RoomStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
