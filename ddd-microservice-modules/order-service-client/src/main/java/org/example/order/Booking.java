@@ -38,9 +38,9 @@ public class Booking {
   private RoomId roomId;
 
   @AttributeOverrides({
-     @AttributeOverride(name = "name", column = @Column(name = "customer_name")),
-     @AttributeOverride(name = "idCard", column = @Column(name = "customer_id_card")),
-     @AttributeOverride(name = "phone", column = @Column(name = "customer_phone")),
+    @AttributeOverride(name = "name", column = @Column(name = "customer_name")),
+    @AttributeOverride(name = "idCard", column = @Column(name = "customer_id_card")),
+    @AttributeOverride(name = "phone", column = @Column(name = "customer_phone")),
   })
   @Embedded
   private Customer customer;

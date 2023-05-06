@@ -1,6 +1,5 @@
 package org.example.hotel;
 
-
 public class CheckOutEventHandler {
   private final Hotel hotel;
 

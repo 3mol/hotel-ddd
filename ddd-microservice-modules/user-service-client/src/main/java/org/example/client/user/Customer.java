@@ -1,7 +1,6 @@
 package org.example.client.user;
 
 import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
 import lombok.Data;
 
 @Data
