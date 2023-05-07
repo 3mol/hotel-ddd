@@ -11,11 +11,8 @@ import org.example.order.OrderCheckedOutEvent;
 import org.example.order.OrderRemoteService;
 import org.example.order.OrderResp;
 import org.example.payment.PaymentReceivedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Service
@@ -67,9 +64,8 @@ public class RoomService {
     return room.open(openDoorReq.getRoomCard());
   }
 
-  @EventListener
   @Transactional
-  public void listener(OrderCheckedInEvent event) {
+  public void listen(OrderCheckedInEvent event) {
     log.info("房间入住事件监听:{}", event);
     final RoomId roomId = event.getRoomId();
     final Room room =
@@ -79,9 +75,8 @@ public class RoomService {
     log.info("房间状态更新成功！{}", RoomStatus.CHECKED_IN);
   }
 
-  @EventListener
   @Transactional
-  public void listener(OrderCancelledEvent event) {
+  public void listen(OrderCancelledEvent event) {
     // 订单取消事件，房间释放
     log.info("OrderCancelledEvent:{}", event);
     final RoomId roomId = event.getRoomId();
@@ -92,9 +87,8 @@ public class RoomService {
     log.info("OrderCancelledEvent done！{}", RoomStatus.FREE);
   }
 
-  @EventListener
   @Transactional
-  public void listener(OrderCheckedOutEvent event) {
+  public void listen(OrderCheckedOutEvent event) {
     log.info("房间退房事件监听:{}", event);
     final RoomId roomId = event.getRoomId();
     final Room room =
@@ -104,9 +98,7 @@ public class RoomService {
     log.info("房间状态更新成功！{}", RoomStatus.CHECKED_IN);
   }
 
-  @Async
   @Transactional
-  @TransactionalEventListener
   public void listen(PaymentReceivedEvent event) {
     log.info("接受到支付被接受事件：{}", event);
     final String orderNumber = event.getSerialNumber();

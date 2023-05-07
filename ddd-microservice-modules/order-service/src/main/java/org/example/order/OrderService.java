@@ -7,12 +7,10 @@ import org.example.base.DomainEventPublisher;
 import org.example.payment.PaymentReceivedEvent;
 import org.example.room.RoomRemoteService;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
-@Service
 public class OrderService {
   @Resource OrderRepository orderRepository;
   @Resource BookingRepository bookingRepository;
@@ -34,7 +32,6 @@ public class OrderService {
     order.setCheckInTime(null);
     order.setCheckOutTime(null);
     orderRepository.save(order);
-
     final Booking booking = new Booking();
     booking.setOrderId(new OrderId(order.getId(), order.getNumber()));
     booking.setRoomId(bookingReq.getRoomId());
@@ -42,10 +39,8 @@ public class OrderService {
     booking.setPhone(bookingReq.getPhone());
     booking.setOrderedUserId(bookingReq.getUserId());
     booking.setCheckInDate(bookingReq.getCheckInDate());
-
     // 持久化聚合
     bookingRepository.save(booking);
-
     // 发布预定事件
     final OrderBookedEvent orderBookedEvent =
         new OrderBookedEvent(new OrderId(order.getId(), order.getNumber()), order.getRoomId());
