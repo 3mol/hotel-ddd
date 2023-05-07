@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import org.example.base.DomainEventPublisher;
 import org.example.client.user.Customer;
+import org.example.payment.PaymentRemoteService;
 import org.example.room.RoomId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

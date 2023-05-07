@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0.33-oracle
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - ./compile-schema-per-service.sh:/docker-entrypoint-initdb.d/compile-schema-per-service.sh
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+
+  kafka:
+    image: bitnami/kafka:latest
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: yes
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_HEAP_OPTS: -Xms512m -Xmx512m
+    ports:
+      - "9092:9092"
+
+  hotel-service:
+    image: hotel-service:latest
+    environment:
+      DATASOURCE_URL: jdbc:mysql://mysql:3306/h_hotel
+      DATASOURCE_USERNAME: root
+      DATASOURCE_PASSWORD: root_password
+      DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      - mysql
+      - kafka
+  order-service:
+    image: order-service:latest
+    environment:
+      DATASOURCE_URL: jdbc:mysql://mysql:3306/h_order
+      DATASOURCE_USERNAME: root
+      DATASOURCE_PASSWORD: root_password
+      DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      - mysql
+      - kafka
+  payment-service:
+    image: payment-service:latest
+    environment:
+      DATASOURCE_URL: jdbc:mysql://mysql:3306/h_payment
+      DATASOURCE_USERNAME: root
+      DATASOURCE_PASSWORD: root_password
+      DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      - mysql
+      - kafka
+  room-service:
+    image: room-service:latest
+    environment:
+      DATASOURCE_URL: jdbc:mysql://mysql:3306/h_room
+      DATASOURCE_USERNAME: root
+      DATASOURCE_PASSWORD: root_password
+      DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      - mysql
+      - kafka
+  user-service:
+    image: user-service:latest
+    environment:
+      DATASOURCE_URL: jdbc:mysql://mysql:3306/h_user
+      DATASOURCE_USERNAME: root
+      DATASOURCE_PASSWORD: root_password
+      DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      - mysql
+      - kafka

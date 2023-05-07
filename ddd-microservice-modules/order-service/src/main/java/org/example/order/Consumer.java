@@ -13,6 +13,11 @@ public class Consumer {
   @Resource ObjectMapper objectMapper;
   @Resource OrderService orderService;
 
+  public Consumer(ObjectMapper objectMapper, OrderService orderService) {
+    this.objectMapper = objectMapper;
+    this.orderService = orderService;
+  }
+
   @KafkaListener(topics = DomainEventPublisher.PREFIX + "PaymentReceivedEvent")
   public void consumerOrderBookedEvent(String message) {
     try {

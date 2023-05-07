@@ -83,7 +83,7 @@ public class PaymentService {
   public void listen(OrderBookedEvent event) {
     log.info("handling event: {}", event);
     final OrderId orderId = event.getOrderId();
-    final Booking booking = bookingRemoteService.findByOrderId(orderId);
+    final Booking booking = bookingRemoteService.findByOrderId(orderId.getId());
     final Date checkInTime = booking.getCheckInDate();
     final RoomId roomId = event.getRoomId();
     // 创建支付信息
@@ -119,7 +119,7 @@ public class PaymentService {
     log.info("OrderCancelledEvent:{}", event);
     final List<Payment> payments =
         paymentRepository.findAllBySerialNumber(event.getOrderId().getNumber());
-    final Booking bookingInfo = bookingRemoteService.findByOrderId(event.getOrderId());
+    final Booking bookingInfo = bookingRemoteService.findByOrderId(event.getOrderId().getId());
     final Date checkInDate = bookingInfo.getCheckInDate();
     // 退回所有订金
     payments.forEach(i -> i.cancel(currentDate.get(), checkInDate));

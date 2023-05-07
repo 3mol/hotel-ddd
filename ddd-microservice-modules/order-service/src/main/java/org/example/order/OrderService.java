@@ -5,18 +5,34 @@ import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.base.DomainEventPublisher;
 import org.example.payment.PaymentReceivedEvent;
+import org.example.payment.PaymentRemoteService;
 import org.example.room.RoomRemoteService;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
+@Service
 public class OrderService {
   @Resource OrderRepository orderRepository;
   @Resource BookingRepository bookingRepository;
   @Resource DomainEventPublisher domainEventPublisher;
   @Resource PaymentRemoteService paymentService;
   @Resource RoomRemoteService roomService;
+
+  public OrderService(
+      OrderRepository orderRepository,
+      BookingRepository bookingRepository,
+      DomainEventPublisher domainEventPublisher,
+      PaymentRemoteService paymentService,
+      RoomRemoteService roomService) {
+    this.orderRepository = orderRepository;
+    this.bookingRepository = bookingRepository;
+    this.domainEventPublisher = domainEventPublisher;
+    this.paymentService = paymentService;
+    this.roomService = roomService;
+  }
 
   @Transactional
   public OrderResp booking(BookingReq bookingReq) {
