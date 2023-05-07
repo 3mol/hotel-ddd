@@ -64,10 +64,13 @@ namespace Infra{}
 7. 简单的前端页面
 
 ### 部署
-
 使用Docker进行打包，每个服务打包成一个镜像。为了执行完整的集成测试，可以启动所有服务后执行测试服务的脚本即可。
 
 ### 测试
 单元测试
-组件测试
-集成测试
+
+- 直接运行在对应的模块执行test命令即可
+  `mvn -pl ddd-microservice-modules/hotel-service test`
+  集成测试
+- 先运行相关的所有服务，或者使用docker-compose运行所有相关的容器，然后执行集成测试服务的测试用例
+  `mvn -pl ddd-microservice-modules/intergration-testing test`
