@@ -25,6 +25,8 @@
     <module>payment-service-client</module>
     <module>order-service</module>
     <module>order-service-client</module>
+
+    <module>integration-testing</module>
     <!--    todo 后续提取出统一的-->
     <!--    <module>report-service</module>-->
   </modules>
@@ -35,6 +37,19 @@
   </properties>
 
   <dependencies>
+    <!-- API, java.xml.bind module -->
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>2.3.2</version>
+    </dependency>
+    <!-- Runtime, com.sun.xml.bind module -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>2.3.2</version>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
@@ -56,21 +71,12 @@
       <version>1.4.200</version>
       <scope>runtime</scope>
     </dependency>
-
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.200</version>
-      <scope>runtime</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <version>2.3.4.RELEASE</version>
       <scope>test</scope>
     </dependency>
-
 
     <dependency>
       <groupId>cn.hutool</groupId>

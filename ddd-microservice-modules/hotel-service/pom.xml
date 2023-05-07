@@ -23,4 +23,37 @@
       <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <finalName>app-dist</finalName>
+    <plugins>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>1.2.2</version>
+        <configuration>
+          <imageName>${project.artifactId}</imageName>
+          <dockerDirectory>${project.basedir}</dockerDirectory>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>2.3.2.RELEASE</version>
+        <!-- 非继承自spring boot项目，需要指定以下参数 -->
+        <configuration>
+          <mainClass>org.example.Application</mainClass>
+          <layout>ZIP</layout>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
