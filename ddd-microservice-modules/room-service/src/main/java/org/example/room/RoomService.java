@@ -1,5 +1,6 @@
 package org.example.room;
 
+import java.util.Date;
 import java.util.UUID;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -120,5 +121,15 @@ public class RoomService {
 
   public void save(Room room) {
     roomRepository.save(room);
+  }
+
+  public double getDiscountPrice(Long id, Date checkInTime) {
+    final Room room = getById(id);
+    return room.getDiscountPrice(checkInTime);
+  }
+
+  public Boolean canBeReserved(Long id) {
+    final Room room = getById(id);
+    return room.canBeReserved();
   }
 }

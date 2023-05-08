@@ -1,3 +1,5 @@
+server:
+  port: ${PORT:8010}
 spring:
   application:
     name: hotel-service
@@ -6,8 +8,6 @@ spring:
     username: ${DATASOURCE_USERNAME:root}
     password: ${DATASOURCE_PASSWORD:root_password}
     driver-class-name: ${DATASOURCE_DRIVER:com.mysql.cj.jdbc.Driver}
-
-
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer.key-serializer: org.apache.kafka.common.serialization.StringSerializer

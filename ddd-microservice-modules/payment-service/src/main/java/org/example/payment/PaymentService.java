@@ -94,7 +94,8 @@ public class PaymentService {
   }
 
   private List<Payment> getPaymentsForBooked(OrderBookedEvent event, Date checkInTime) {
-    final double roomDiscountPrice = roomRemoteService.getDiscountPrice(event.getRoomId().getId());
+    final double roomDiscountPrice =
+        roomRemoteService.getDiscountPrice(event.getRoomId().getId(), checkInTime);
     // 尾款支付\押金支付
     return Arrays.asList(
         buildUnpaid(PayType.DEPOSIT, event.getOrderId().getNumber(), roomDiscountPrice * 0.2),
@@ -204,5 +205,24 @@ public class PaymentService {
     return paymentRepository.findAllBySerialNumber(number).stream()
         .filter(i -> i.getStatus() == PayStatus.UNPAID)
         .collect(Collectors.toList());
+  }
+
+  public PaymentResp getById(Long id) {
+    final Payment one = paymentRepository.getOne(id);
+    return of(one);
+  }
+
+  private PaymentResp of(Payment payment) {
+    final PaymentResp paymentResp = new PaymentResp();
+    paymentResp.setId(payment.getId());
+    paymentResp.setMethod(payment.getMethod());
+    paymentResp.setSerialNumber(paymentResp.getSerialNumber());
+    paymentResp.setThirdPartySerialNumber(payment.getThirdPartySerialNumber());
+    paymentResp.setType(payment.getType());
+    paymentResp.setStatus(payment.getStatus());
+    paymentResp.setAmount(payment.getAmount());
+    paymentResp.setCreatedAt(payment.getCreatedAt());
+    paymentResp.setPaidAt(payment.getPaidAt());
+    return paymentResp;
   }
 }

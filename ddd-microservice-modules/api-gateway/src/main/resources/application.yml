@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: api-gateway
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:mysql://localhost:3306/h_api_gateway}
+    username: ${DATASOURCE_USERNAME:root}
+    password: ${DATASOURCE_PASSWORD:root_password}
+    driver-class-name: ${DATASOURCE_DRIVER:com.mysql.cj.jdbc.Driver}
+hotel-service-url: ${hotel-service-url:127.0.0.1:8010}
+room-service-url: ${room-service-url:127.0.0.1:8015}
+payment-service-url: ${payment-service-url:127.0.0.1:8020}
+order-service-url: ${order-service-url:127.0.0.1:8025}
+user-service-url: ${user-service-url:127.0.0.1:8030}

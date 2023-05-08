@@ -149,4 +149,14 @@ public class OrderService {
     }
     log.info("支付被接受事件处理完成：{}", event);
   }
+
+  public OrderResp findByNumber(String orderNumber) {
+    final Order order = orderRepository.findByNumber(orderNumber);
+    return of(order);
+  }
+
+  public OrderResp getById(Long orderId) {
+    final Order order = orderRepository.getOne(orderId);
+    return of(order);
+  }
 }

@@ -27,6 +27,7 @@
     <module>order-service-client</module>
 
     <module>integration-testing</module>
+    <module>api-gateway</module>
     <!--    todo 后续提取出统一的-->
     <!--    <module>report-service</module>-->
   </modules>

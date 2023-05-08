@@ -104,7 +104,7 @@ class PaymentServiceTest {
   @Test
   @DisplayName("周日支付, 不打折")
   void listen() {
-    when(roomRepository.getDiscountPrice(any())).thenReturn(100D);
+    when(roomRepository.getDiscountPrice(any(), any())).thenReturn(100D);
     final Booking booking = new Booking();
     // 周日，不打价
     booking.setCheckInDate(DateUtil.parseDate("2023-04-30"));
@@ -124,7 +124,7 @@ class PaymentServiceTest {
   @Test
   @DisplayName("周五支付, 打五折")
   void listen2() {
-    when(roomRepository.getDiscountPrice(any())).thenReturn(50d);
+    when(roomRepository.getDiscountPrice(any(), any())).thenReturn(50d);
     final Booking booking = new Booking();
     // 周五，打5折
     booking.setCheckInDate(DateUtil.parseDate("2023-04-28"));

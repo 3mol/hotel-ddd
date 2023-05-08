@@ -28,6 +28,9 @@ services:
       DATASOURCE_PASSWORD: root_password
       DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PORT: 8080
+    ports:
+      - "8080:8080"
     depends_on:
       - mysql
       - kafka
@@ -39,6 +42,9 @@ services:
       DATASOURCE_PASSWORD: root_password
       DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PORT: 8080
+    ports:
+      - "8080:8080"
     depends_on:
       - mysql
       - kafka
@@ -50,6 +56,9 @@ services:
       DATASOURCE_PASSWORD: root_password
       DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PORT: 8080
+    ports:
+      - "8080:8080"
     depends_on:
       - mysql
       - kafka
@@ -61,6 +70,9 @@ services:
       DATASOURCE_PASSWORD: root_password
       DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PORT: 8080
+    ports:
+      - "8080:8080"
     depends_on:
       - mysql
       - kafka
@@ -72,6 +84,9 @@ services:
       DATASOURCE_PASSWORD: root_password
       DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PORT: 8080
+    ports:
+      - "8080:8080"
     depends_on:
       - mysql
       - kafka
